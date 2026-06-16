@@ -1,0 +1,35 @@
+name: CI
+
+# Bootstrap updates this workflow when it provisions a non-Node stack — but the harness
+# linter is npm-delivered, so even a non-Node stack must keep a minimal Node toolchain,
+# the pinned `@andrew-semyonov/harness-linter` devDependency, and the `npx harnesslint`
+# step that `make ci` runs (see docs/bootstrap/blessed-stacks.md, F5).
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.2.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Install (with the committed lockfile) BEFORE any target that calls `npx harnesslint`,
+      # which resolves the bin from node_modules/.bin.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # `make ci` = fmt-check + lint + test + build + lint-harness. CI runs against the PR,
+      # where the active exec-plan is already closed, so `exec-plan-active-present` does not fire.
+      - name: Run full gate
+        run: make ci

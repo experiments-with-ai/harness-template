@@ -1,0 +1,20 @@
+{
+  "files": {
+    "ignore": [
+      ".git/**",
+      "thoughts/**",
+      "vendor/**",
+      "bin/**",
+      "dist/**",
+      ".archive/**",
+      "node_modules/**"
+    ]
+  },
+  "linter": {
+    "rules": {
+      "pairing": true,
+      "claudeInclude": true,
+      "brokenLinks": true
+    }
+  }
+}

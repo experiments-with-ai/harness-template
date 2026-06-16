@@ -1,0 +1,18 @@
+# Build output
+bin/
+dist/
+node_modules/
+coverage/
+
+# Env / secrets — never commit these
+.env
+.env.*
+
+# OS
+.DS_Store
+
+# Local scratch notes (not a source of truth)
+thoughts/
+
+# Agent tool config (configured per local environment, not shipped)
+.claude

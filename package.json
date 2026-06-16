@@ -1,0 +1,25 @@
+{
+  "name": "harness-template",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Agent-driven harness template: a disciplined starting point for new software projects.",
+  "type": "module",
+  "packageManager": "pnpm@11.2.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "fmt": "biome format --write .",
+    "fmt:check": "biome format .",
+    "lint": "biome lint . && tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@andrew-semyonov/harness-linter": "0.1.2",
+    "@biomejs/biome": "2.5.0",
+    "@types/node": "25.9.3",
+    "typescript": "6.0.3",
+    "vitest": "4.1.7"
+  }
+}
