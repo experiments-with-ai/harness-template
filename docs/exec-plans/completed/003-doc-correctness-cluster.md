@@ -31,23 +31,23 @@ findings #5 (ordering half), #8, #10, #11, #12, #13.
 
 ## Acceptance Criteria
 
-- [ ] `capability-layering.md` preference list orders Skill before MCP, matching the ladder.
-- [ ] `metrics.md` operational-doc scope line names `docs/workflow/**.md`.
-- [ ] `ci.yml` no longer triggers on non-`main` branch pushes; `node-version` quoted; the
+- [x] `capability-layering.md` preference list orders Skill before MCP, matching the ladder.
+- [x] `metrics.md` operational-doc scope line names `docs/workflow/**.md`.
+- [x] `ci.yml` no longer triggers on non-`main` branch pushes; `node-version` quoted; the
       three third-party actions SHA-pinned with version comments.
-- [ ] `smoke-fixture.md` assertion anchors to `^### .*— TBD` headings; passes on a resolved
+- [x] `smoke-fixture.md` assertion anchors to `^### .*— TBD` headings; passes on a resolved
       tree, fails on a left-`TBD` heading.
-- [ ] `harnesslint.json` no longer carries `.archive/**`.
-- [ ] `make ci` green; `make lint-harness` clean.
+- [x] `harnesslint.json` no longer carries `.archive/**`.
+- [x] `make ci` green; `make lint-harness` clean.
 
 ## Steps
 
-- [ ] Reorder `capability-layering.md` preference list.
-- [ ] Fix `metrics.md` operational-doc scope line.
-- [ ] Narrow `ci.yml` triggers, quote node-version, SHA-pin actions.
-- [ ] Anchor `smoke-fixture.md` TBD assertion.
-- [ ] Remove dead `.archive/**` from `harnesslint.json`.
-- [ ] Run local checks; review; close plan; harness gate; push + PR.
+- [x] Reorder `capability-layering.md` preference list.
+- [x] Fix `metrics.md` operational-doc scope line.
+- [x] Narrow `ci.yml` triggers, quote node-version, SHA-pin actions.
+- [x] Anchor `smoke-fixture.md` TBD assertion.
+- [x] Remove dead `.archive/**` from `harnesslint.json`.
+- [x] Run local checks; review; close plan; harness gate; push + PR.
 
 ## Open Questions
 
