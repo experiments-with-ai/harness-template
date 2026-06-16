@@ -30,28 +30,28 @@ cold-start branching exemption explicit. This is the keystone PR of the dogfood 
 
 ## Acceptance Criteria
 
-- [ ] A reviewer following the new prompt, run on a feature branch with **committed** changes,
+- [x] A reviewer following the new prompt, run on a feature branch with **committed** changes,
   reviews a non-empty `main...HEAD` diff (the #2 empty-diff vacuous-pass cannot occur).
-- [ ] `lifecycle.md`, `code-review-prompt.md`, `review/AGENTS.md`, `AGENTS.md` step 5, and
+- [x] `lifecycle.md`, `code-review-prompt.md`, `review/AGENTS.md`, `AGENTS.md` step 5, and
   `running-the-workflow.md` agree on: branch-diff unit, commit-before-re-spawn, SHA-keying
   (`--short=12`), active→closed ownership.
-- [ ] Cold-start genesis-on-`main` exemption stated in `AGENTS.md` and `cold-start.md`.
-- [ ] `make lint-harness` clean (no broken inline paths/links introduced); `make ci` green.
-- [ ] This PR is reviewed by the new branch-diff reviewer (self-applying) and reaches APPROVED.
+- [x] Cold-start genesis-on-`main` exemption stated in `AGENTS.md` and `cold-start.md`.
+- [x] `make lint-harness` clean (no broken inline paths/links introduced); `make ci` green.
+- [x] This PR is reviewed by the new branch-diff reviewer (self-applying) and reaches APPROVED.
 
 ## Steps
 
-- [ ] Rewrite `code-review-prompt.md`: branch-diff against `main`, `--short=12`, resolve-SHA
+- [x] Rewrite `code-review-prompt.md`: branch-diff against `main`, `--short=12`, resolve-SHA
   comparison, simplified state machine.
-- [ ] Update `lifecycle.md`: branch-diff unit, commit-before-re-spawn wording, `--short=12`.
-- [ ] Update `review/AGENTS.md` if it restates diff semantics (SHA-key wording).
-- [ ] Update root `AGENTS.md` step 5 (commit-before-re-spawn) and the "never edit on
+- [x] Update `lifecycle.md`: branch-diff unit, commit-before-re-spawn wording, `--short=12`.
+- [x] Update `review/AGENTS.md` if it restates diff semantics (SHA-key wording).
+- [x] Update root `AGENTS.md` step 5 (commit-before-re-spawn) and the "never edit on
   `main`/`dev`" rule (cold-start genesis exemption).
-- [ ] Update `running-the-workflow.md`: branch-diff reference + mechanical read-only spawn
+- [x] Update `running-the-workflow.md`: branch-diff reference + mechanical read-only spawn
   guidance.
-- [ ] Update `cold-start.md`: one-line genesis-on-`main` note.
-- [ ] Local checks: `make fmt`/`lint`/`test`/`build`.
-- [ ] Review loop to APPROVED; close plan; harness gate; PR.
+- [x] Update `cold-start.md`: one-line genesis-on-`main` note.
+- [x] Local checks: `make fmt`/`lint`/`test`/`build`.
+- [x] Review loop to APPROVED (first pass); close plan; harness gate; PR.
 
 ## Open Questions
 
