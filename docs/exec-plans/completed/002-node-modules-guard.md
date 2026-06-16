@@ -23,25 +23,25 @@ merges) the defaults. This is the **doc workaround** for audit finding #1; the r
 
 ## Acceptance Criteria
 
-- [ ] The docs name the exact literal-path remedy (`apps/web/node_modules/**`,
+- [x] The docs name the exact literal-path remedy (`apps/web/node_modules/**`,
       `packages/api/node_modules/**`, per-package `dist/**`) and the `**`/`apps/*`-does-not-work
       caveat for linter 0.1.2.
-- [ ] The docs state that `files.ignore` **replaces** the default ignore list, so any added
+- [x] The docs state that `files.ignore` **replaces** the default ignore list, so any added
       entry must preserve the existing defaults.
-- [ ] A manual repro — scaffold `apps/web/node_modules/{README.md,AGENTS.md}`, apply the
+- [x] A manual repro — scaffold `apps/web/node_modules/{README.md,AGENTS.md}`, apply the
       documented literal ignore, run the linter — exits 0.
-- [ ] No change to the shipped single-package `harnesslint.json`.
-- [ ] `make lint-harness` clean (after plan close); `make ci` green.
+- [x] No change to the shipped single-package `harnesslint.json`.
+- [x] `make lint-harness` clean (after plan close); `make ci` green.
 
 ## Steps
 
-- [ ] Add the multi-package ignore guidance to `cold-start.md` step 8.
-- [ ] Add a cross-cutting multi-package note to `blessed-stacks.md`.
-- [ ] Add a one-line cross-reference to `ARCHITECTURE.md`'s `apps/`+`packages/` bullet.
-- [ ] Manual repro to prove the remedy (scaffold vendored docs → apply ignore → linter exit 0).
-- [ ] Inner loop: `make fmt` / `make lint` / `make test` / `make build`.
-- [ ] Pre-commit review (branch-diff reviewer) → APPROVED.
-- [ ] Close plan, `make lint-harness`, `make ci`, push + PR.
+- [x] Add the multi-package ignore guidance to `cold-start.md` step 8.
+- [x] Add a cross-cutting multi-package note to `blessed-stacks.md`.
+- [x] Add a one-line cross-reference to `ARCHITECTURE.md`'s `apps/`+`packages/` bullet.
+- [x] Manual repro to prove the remedy (scaffold vendored docs → apply ignore → linter exit 0).
+- [x] Inner loop: `make fmt` / `make lint` / `make test` / `make build`.
+- [x] Pre-commit review (branch-diff reviewer) → APPROVED.
+- [x] Close plan, `make lint-harness`, `make ci`, push + PR.
 
 ## Open Questions
 
