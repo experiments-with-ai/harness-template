@@ -45,7 +45,7 @@ This is the part that earns trust. Instead of a fabricated speedup, we enumerate
 The tags are load-bearing. For an honesty-thesis doc, calling a `[process]` convention "enforced" is exactly the overclaim to avoid. Keep them verbatim:
 
 - No unpaired agent docs — **[mechanical]** (linter pairing + `claudeInclude`)
-- No stale path in an operational doc — **[mechanical]** (linter `operational-doc-broken-path`; plus `brokenLinks` for AGENTS.md markdown links). Scope: only README/AGENTS/CLAUDE inline paths + AGENTS.md links — not every doc.
+- No stale path in an operational doc — **[mechanical]** (linter `operational-doc-broken-path`; plus `brokenLinks` for AGENTS.md markdown links). Scope: README.md, every `AGENTS.md`/`CLAUDE.md`, and any `docs/workflow/**.md` inline paths + AGENTS.md links — not every doc.
 - No abandoned/unclosed exec-plan at the gate — **[mechanical]** (linter `exec-plan-active-present` / `completed-open-checkbox` / `duplicate-id`, run at the gate)
 - No merge without green CI — **[mechanical iff branch protection is enabled]** (CI is the check; blocking merge needs the GitHub branch-protection setting, which the template documents but cannot ship — so this is only mechanical once that setting is turned on)
 - No undocumented architectural decision — **[process]** (decisions live in the plan's Decisions section; no checker verifies presence)
