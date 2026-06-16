@@ -58,7 +58,11 @@ These rules are MUST, not suggestions. If a step cannot be completed, STOP and a
    `make lint` is **stack linters only** — loop fix → rerun until green. Do **not** run
    `make lint-harness` here (the harness linter's exec-plan rule will fail while a plan is
    still active — that is by design; it is a gate, not an inner-loop check).
-4. **UI validation** *(only if the project has a UI)*. Validate on desktop and mobile per
+4. **UI validation** *(only if the project has a UI)*. Run the provisioned validation **gate**
+   — the Playwright UI smoke wired into `make test` (desktop + mobile, asserts rendered state +
+   screenshots) — and, for inner-loop legibility, the optional browser-MCP **loop**. The
+   concrete mechanism and the per-stack matrix are in
+   [docs/bootstrap/blessed-stacks.md](docs/bootstrap/blessed-stacks.md); the pattern is in
    [docs/observability/checklist.md](docs/observability/checklist.md). After any change, return to step 3.
 5. **Pre-commit review.** Spawn a fresh-context, **read-only** reviewer that follows
    [docs/review/code-review-prompt.md](docs/review/code-review-prompt.md) and emits exactly

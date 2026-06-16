@@ -50,6 +50,54 @@ already in the defaults. Prefer it unless the product genuinely needs a workspac
 
 ---
 
+## Validation tooling: a gate and a loop, kept separate
+
+"It builds and lints" says the code is well-formed; it says nothing about whether the
+*running system* behaves. Provisioning closes that gap with **two distinct kinds of
+tooling**, and the distinction is load-bearing — do not conflate them:
+
+- **Gate tooling — `[mechanical]`.** A *deterministic check wired into `make test` / `make
+  ci`*. It is CI-enforced and reproducible, so it turns "did the agent build a working UI /
+  correct DB behaviour?" into a gate a machine stops, not a vibe. This is the strong move:
+  prefer the **library-as-test** form (e.g. Playwright run from `vitest`/`make test`) because
+  it is mechanically enforceable.
+- **Loop tooling — `[process]`.** An *MCP that gives the agent eyes during the inner dev
+  loop* — drive a browser, read console errors, introspect a DB. High-value for catching slop
+  early, but **no checker verifies it ran**, so it is a convention, not an enforcement.
+
+**Wire both, layered.** The gate is the floor (it must be green to merge); the MCP rides on
+top for legibility. Keep the honesty tagging from
+[../harness/metrics.md](../harness/metrics.md): **gate = `[mechanical]`, MCP/loop =
+`[process]`**. Keep it **boring and minimal** — a Playwright smoke + screenshots is enough for
+a UI; a seed + one assertion test against a throwaway DB is enough for persistence. Do not
+balloon either into an observability platform.
+
+### Per-stack validation-capability matrix
+
+| Stack | Gate (in `make test` / CI — `[mechanical]`) | Loop (MCP, optional — `[process]`) |
+|---|---|---|
+| **web-app** | Playwright smoke driving **desktop + mobile** viewports, asserting rendered state + capturing screenshots | `chrome-devtools` or Playwright MCP |
+| **api-service** | local-boot smoke + HTTP request/response assertion tests | an HTTP / DB MCP |
+| **+ database** *(cross-cutting)* | migrations + assertion tests against an **ephemeral** DB (sqlite / testcontainers) | a SQL MCP |
+| **cli** | stdin / stdout / exit-code assertion tests | — |
+
+The `+ database` row is cross-cutting: fold it into whichever stack actually persists data.
+Always assert against a **throwaway** DB (sqlite file or a testcontainer), never a shared or
+real one.
+
+### Template-neutral, provisioned-project-concrete
+
+The **template** stays tool-neutral — it ships **no** `.claude/`, `.codex/`, `.mcp.json`, or
+Playwright dependency (see [../agents/running-the-workflow.md](../agents/running-the-workflow.md)
+§4). But the **provisioned project is the user's own repo**, so provisioning *does* write
+concrete, project-local tool config there: a project `.mcp.json` (Claude Code) and the Codex
+MCP-config equivalent for the chosen loop tool, plus the Playwright devDependency and its
+`make test` wiring for the gate. State it plainly: **template neutral; provisioned project
+concrete.** Network installs stay gated per [../security/baseline.md](../security/baseline.md)
+— propose, never auto-install.
+
+---
+
 ## web-app — suggested default product stack
 
 The cold-start flow proposes this when the user has no preference and is building
@@ -69,8 +117,13 @@ make build   # vite build (tsc for typecheck)
 **Enforcement wired:**
 
 - `biome` (format + lint) and `tsc` (types) via `make lint`.
-- **UI validation** — because it has a UI, both desktop and mobile viewports are
-  exercised (drive the running app, assert on rendered state, capture screenshots).
+- **UI validation gate `[mechanical]`** — a **Playwright smoke wired into `make test`** drives
+  the running app on **both desktop and mobile** viewports, asserts on rendered state, and
+  captures screenshots. Because it runs in `make test`/CI it is a real mechanical gate, not a
+  convention.
+- **UI validation loop `[process]` (optional)** — a browser MCP (`chrome-devtools` or
+  Playwright MCP), written **into the provisioned project**, gives the agent eyes in the inner
+  dev loop. High-value, but not a gate.
 - *Optional:* an FSD architecture linter wired into `make lint` if the user requests
   Feature-Sliced Design boundary enforcement (the agent picks a concrete tool at
   provisioning time).
@@ -80,17 +133,81 @@ make build   # vite build (tsc for typecheck)
 - Runtime-error surfacing (console + uncaught errors bubbled into validation).
 - Screenshot capture (desktop + mobile) as part of the validation loop.
 
+### Web-app scaffold recipe (copy-pasteable)
+
+> **Verified against Vite 6 / React 19, Tailwind 4, Playwright 1.5x as of 2026-06-16.**
+> These tools move fast. Treat the recipe as the shape; re-check the create command and the
+> two or three pinned versions against the current releases before relying on it, and update
+> this dated note when you do. (Decision: a dated recipe over hard-pinned versions that rot
+> silently — see the active exec-plan's Decisions.)
+
+**1. Scaffold into the repo root (single-root layout — avoids the multi-package
+`node_modules` trap):**
+
+```sh
+# Scaffold in place, at the repo root — NOT into apps/web. One root node_modules/,
+# already covered by the default harnesslint.json ignores.
+pnpm create vite@latest . --template react-ts
+pnpm install
+```
+
+`src/` holds the app (`src/main.tsx`, `src/App.tsx`, components, routes). The disposable
+tracer `src/index.ts` + `src/index.test.ts` are deleted as part of provisioning.
+
+**2. Tailwind + shadcn/ui:**
+
+```sh
+pnpm add -D tailwindcss @tailwindcss/vite      # Tailwind v4: Vite plugin, no PostCSS config
+pnpm dlx shadcn@latest init                     # generates components.json + the cn() util
+```
+
+Add the Tailwind plugin to `vite.config.ts` and the `@import "tailwindcss";` line to the root
+stylesheet per the current Tailwind-v4 + Vite guide. React Router: `pnpm add react-router-dom`.
+
+**3. The Playwright UI-validation gate (the `[mechanical]` move):**
+
+```sh
+pnpm add -D @playwright/test
+pnpm exec playwright install --with-deps chromium
+```
+
+Add **one** smoke spec under `e2e/` that boots the app, asserts a real rendered element, and
+screenshots **desktop and mobile** viewports — e.g. `e2e/smoke.spec.ts` with two
+`test.use({ viewport })` blocks (a desktop `1280×800` and a mobile `390×844`). Keep it
+minimal: one happy-path flow + screenshots is the whole gate. Wire it so `make test` runs it
+(either a combined `vitest run && playwright test`, or a `test:e2e` script invoked by the
+`make test` target).
+
+**4. The four `make`-target rewrites:**
+
+| Target | New command |
+|---|---|
+| `make fmt` | `biome format --write .` |
+| `make lint` | `biome check . && tsc --noEmit` |
+| `make test` | `vitest run && playwright test` |
+| `make build` | `tsc -b && vite build` |
+
+(`make lint-harness` and `make ci` are harness-core — **not** rewritten.)
+
+**5. The CI diff** (`.github/workflows/ci.yml`): keep the `npx harnesslint .` step verbatim;
+add a `pnpm exec playwright install --with-deps chromium` step before the test run so the
+Playwright gate has a browser in CI; the existing `make ci` chaining is unchanged.
+
 **Provisioning checklist:**
 
-- [ ] Scaffold the Vite + React + TS app (Tailwind/shadcn, React Router).
-- [ ] Rewrite the four `make` targets (`fmt`, `lint`, `test`, `build`) for biome /
-      vitest / vite.
-- [ ] Update `.github/workflows/ci.yml` to run the new targets, keeping the
-      `npx harnesslint .` step.
-- [ ] Wire enforcement: biome + tsc; UI validation (desktop + mobile); add an FSD
+- [ ] Scaffold the Vite + React + TS app **at the repo root** per the recipe above
+      (Tailwind/shadcn, React Router) — single-root layout.
+- [ ] Add the Playwright UI-validation gate: one `e2e/` smoke spec (desktop + mobile, asserts
+      rendered state, screenshots) wired into `make test`.
+- [ ] *(Optional)* Write a browser MCP config (`chrome-devtools` / Playwright MCP) into the
+      project for the inner-loop `[process]` tool — installs gated.
+- [ ] Rewrite the four `make` targets (`fmt`, `lint`, `test`, `build`) per the table above.
+- [ ] Update `.github/workflows/ci.yml` to run the new targets + install the Playwright
+      browser, keeping the `npx harnesslint .` step.
+- [ ] Wire enforcement: biome + tsc; the Playwright UI gate (desktop + mobile); add an FSD
       architecture linter only if requested.
 - [ ] Wire observability: runtime-error surfacing + screenshot capture.
-- [ ] Remove the tracer source (`src/index.ts`); keep the Node sliver +
+- [ ] Remove the tracer source (`src/index.ts` + `src/index.test.ts`); keep the Node sliver +
       pinned linter devDependency.
 
 ---
@@ -115,8 +232,14 @@ make build   # tsc (or bundle)
 
 - biome + tsc (or `gofmt` + `go vet` + `golangci-lint` for the Go option).
 - **No UI validation** — there is no UI.
+- **Local-boot + HTTP assertion gate `[mechanical]`** — tests that boot the service locally
+  and assert on real request/response pairs, wired into `make test`/CI (the api-service row of
+  the matrix above).
 - Boundary / schema validation at the edges (validate inbound requests and outbound
   responses against schemas; reject malformed input at the boundary).
+- **If the service persists data** — add the `+ database` gate: run migrations and assert
+  against an **ephemeral** DB (sqlite / testcontainers), never a shared or real one. An
+  HTTP/SQL MCP is the optional `[process]` loop tool.
 
 **Observability wired:**
 
@@ -155,6 +278,9 @@ make build   # tsc / bundle to a runnable entrypoint
 
 - biome + tsc (or `gofmt` + `go vet` + `golangci-lint` for the Go option).
 - **No UI validation.**
+- **stdin/stdout/exit-code assertion gate `[mechanical]`** — tests that run the built CLI and
+  assert on stdout, stderr, and exit codes, wired into `make test`/CI (the cli row of the
+  matrix above). No loop MCP applies here.
 
 **Observability wired:**
 

@@ -61,6 +61,18 @@ This is the runtime counterpart to the inner code loop: the agent changes the ap
 real app react*, and iterates. Wire it in step 4 of the task pipeline (the **UI validation**
 step in the root [../../AGENTS.md](../../AGENTS.md)).
 
+**The concrete mechanism (not just the pattern).** For the default web stack this pattern is
+made real by two layered tools, provisioned per the
+[../bootstrap/blessed-stacks.md](../bootstrap/blessed-stacks.md) capability matrix:
+
+- a **Playwright UI smoke wired into `make test`** — the `[mechanical]` gate that drives
+  desktop + mobile viewports, asserts rendered state, and captures screenshots on every CI run;
+- a **browser MCP** (`chrome-devtools` / Playwright MCP) — the optional `[process]` loop tool,
+  written into the provisioned project, that gives the agent eyes while iterating.
+
+The gate is the enforced floor; the MCP rides on top for inner-loop legibility. Keep it
+boring and minimal — one smoke spec + screenshots, not an observability platform.
+
 ### api-service / cli — wire the non-visual triad
 
 With no UI to screenshot, legibility comes entirely from text the agent can read after running
