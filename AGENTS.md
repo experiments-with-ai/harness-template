@@ -47,7 +47,11 @@ These rules are MUST, not suggestions. If a step cannot be completed, STOP and a
 ### Task pipeline
 
 1. **Prep.** Decide plan mode; if execution, create `docs/exec-plans/active/NNN-<slug>.md`.
-   Branch off `main`. Never edit on `main`/`dev`.
+   Branch off `main`. Never edit on `main`/`dev`. **One exception:** the one-time cold-start
+   bootstrap is the project's genesis and runs on `main` (it writes the PRD/ARCHITECTURE/plan
+   `001` and provisions the stack with no PR — there is nothing to PR against yet). Normal
+   branch+PR discipline begins with the **first task after handoff** (implementing plan `001`).
+   See [docs/bootstrap/cold-start.md](docs/bootstrap/cold-start.md).
 2. **Implement.** Do the work; commit in logical chunks. Prefer a validation loop over
    one-shot generation.
 3. **Local checks (inner loop).** Run `make fmt`, then `make lint`, `make test`, `make build`.
@@ -58,8 +62,10 @@ These rules are MUST, not suggestions. If a step cannot be completed, STOP and a
    [docs/observability/checklist.md](docs/observability/checklist.md). After any change, return to step 3.
 5. **Pre-commit review.** Spawn a fresh-context, **read-only** reviewer that follows
    [docs/review/code-review-prompt.md](docs/review/code-review-prompt.md) and emits exactly
-   one verdict. On `CHANGES_REQUESTED`, fix → rerun local checks → re-spawn a fresh reviewer
-   until `APPROVED`. The reviewer's only write is its own report in
+   one verdict. The reviewer judges the branch diff against `main` (`git diff main...HEAD`).
+   On `CHANGES_REQUESTED`, fix → rerun local checks → **commit the fix** → re-spawn a fresh
+   reviewer until `APPROVED` (committing advances `HEAD` so the prior SHA-keyed report
+   self-stales). The reviewer's only write is its own report in
    `docs/review/reports/active/`; **you** (the working agent) move that report to
    `docs/review/reports/closed/` on `APPROVED`. Exact spawn forms per tool:
    [docs/agents/running-the-workflow.md](docs/agents/running-the-workflow.md). If the reviewer

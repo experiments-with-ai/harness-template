@@ -6,6 +6,13 @@ to be executed by any agent — Claude Code or Codex — by reading it top to bo
 numbered steps in order. They are MUST, not suggestions: if a step cannot be completed, STOP and
 ask the human rather than skipping, reordering, or working around it.
 
+**This one-time bootstrap is the project's genesis and runs on `main`** — it writes the
+PRD/ARCHITECTURE/plan `001` and (post-approval) provisions the stack directly on `main`, with no
+feature branch and no PR, because there is nothing to PR against yet. This is the single
+documented exception to the root [AGENTS.md](../../AGENTS.md) "never edit on `main`/`dev`" rule.
+Normal branch+PR discipline begins with the **first task after handoff** (step 10): implementing
+plan `001`.
+
 ## The procedure
 
 ### 1. Trigger / detection
