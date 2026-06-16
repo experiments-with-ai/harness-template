@@ -14,7 +14,9 @@ concrete designs belong in focused docs under `docs/` once they exist.
 
 - **Monorepo-friendly layout.** The template ships as a single root package (the tracer
   bullet). If a provisioned stack is genuinely multi-package, bootstrap introduces an
-  `apps/` + `packages/` workspace at that point — not before.
+  `apps/` + `packages/` workspace at that point — not before, and must add a fully-literal
+  per-package `node_modules/**` ignore to `harnesslint.json` (see
+  `docs/bootstrap/blessed-stacks.md`).
 - **`docs/` is the system of record.** Anything an agent needs to do reliable work lives in
   the repo: product brief, architecture, plans, decisions, references. If it only exists in
   chat or someone's head, it is invisible to the agent.

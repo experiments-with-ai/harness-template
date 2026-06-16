@@ -29,6 +29,24 @@ does not replace it. `make lint-harness` runs at the **gate / CI only**, after t
 active exec-plan has moved to `docs/exec-plans/completed/` — never in the inner
 loop.
 
+## Cross-cutting constraint: multi-package `node_modules` must be ignored literally
+
+If a provisioned stack is genuinely multi-package (`apps/` + `packages/`), each
+package gets its own `node_modules/`. The harness linter would otherwise descend into
+them and flag vendored `README.md` / unpaired `AGENTS.md`. Add a **fully-literal**
+`files.ignore` entry per package to `harnesslint.json` — e.g.
+`apps/web/node_modules/**`, `packages/api/node_modules/**` — plus the per-package
+build dirs (`apps/web/dist/**`).
+
+**Do NOT use `**/node_modules/**` or `apps/*/node_modules/**`** — linter 0.1.2 does
+not expand globs; only literal path prefixes match, so a `**` entry silently ignores
+nothing. And `files.ignore` **replaces** the default ignore list (it does not merge),
+so any added entry must keep the existing defaults (`.git/**`, `thoughts/**`,
+`vendor/**`, `bin/**`, `dist/**`, `node_modules/**`).
+
+The **single-root web-app layout below avoids this trap** — one root `node_modules/`,
+already in the defaults. Prefer it unless the product genuinely needs a workspace.
+
 ---
 
 ## web-app — suggested default product stack

@@ -159,6 +159,19 @@ every bootstrapped repo keeps a **minimal Node toolchain**, the **pinned `harnes
 devDependency**, and the **`npx harnesslint` CI step**. Do not strip Node thinking it is
 stack-specific — it is harness-core plumbing.
 
+**Multi-package workspace guard.** If you introduce a multi-package workspace (`apps/` +
+`packages/`), the harness linter will otherwise descend into each package's `node_modules/` and
+flag vendored `README.md` / unpaired `AGENTS.md`. Fix `harnesslint.json` `files.ignore` with a
+**fully-literal** ignore per package — e.g. `apps/web/node_modules/**`,
+`packages/api/node_modules/**` — plus the per-package build dirs (`apps/web/dist/**`). **Do NOT
+use `**/node_modules/**` or `apps/*/node_modules/**`** — linter 0.1.2 does not expand globs; only
+literal path prefixes match, so a `**` entry silently ignores nothing. Note that `files.ignore`
+**replaces** the default ignore list (it does not merge), so any added entry must preserve the
+existing defaults (`.git/**`, `thoughts/**`, `vendor/**`, `bin/**`, `dist/**`, `node_modules/**`).
+Then re-run `make lint-harness` with no active plan and confirm zero issues. *(The single-root
+web-app recipe sidesteps this entirely — there is one `node_modules/` at the root, already
+ignored.)*
+
 ### 9. Emit the bootstrap-end scorecard
 
 Print the honest scorecard per [docs/harness/metrics.md](../harness/metrics.md): the
