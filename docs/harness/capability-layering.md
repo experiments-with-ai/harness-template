@@ -42,10 +42,13 @@ record" and "mechanical enforcement beats tribal knowledge" sit underneath this.
 
 - **What it is:** A Model Context Protocol server giving the agent a live tool —
   read logs, drive a browser/UI, call an external API.
-- **Graduate TO it when:** the task genuinely requires a **real external loop**:
-  observing or acting on a system that lives outside the repo and changes
-  independently of it. If a file in the repo could answer the question, you do
-  not need an MCP.
+- **Graduate TO it when:** the task genuinely requires a **real external loop** —
+  either when a **known stack need** requires one (a UI to drive, a DB to inspect),
+  or when a cheaper rung visibly fails. The first case lets bootstrap wire an
+  obviously-needed loop tool (a browser MCP for a web app, a SQL MCP for a service
+  with persistence) at provisioning time without waiting for a rung to fail; the
+  rule still forbids *speculative* MCPs with no concrete stack need behind them. If
+  a file in the repo could answer the question, you do not need an MCP.
 - **Cost it adds:** a running dependency — auth, network, version skew, failure
   modes, and a new trust/security boundary. It is the least legible rung: its
   behavior is not in the diff. Reach for it only when in-repo data cannot suffice.

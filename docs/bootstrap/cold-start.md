@@ -68,6 +68,20 @@ the record, not implicit.
 - "handles money" → payments provider, idempotency, reconciliation expectations.
 - "must integrate with X" → the integration's contract, auth, and failure modes.
 
+**Derive validation capabilities from the project shape.** As the answers land, infer what the
+project will need to *prove it runs*, and detect what is available:
+
+- **UI** → a browser-automation gate (Playwright) + an optional browser MCP loop.
+- **persistence / a DB** → a DB client + an **ephemeral** DB for assertion tests (sqlite /
+  testcontainers); optionally a SQL MCP loop.
+- **an external API** → contract / mock tests at the boundary.
+
+**Detect** what the environment already has — is Playwright installable? is a browser MCP
+already configured? is Docker present for testcontainers? — and carry the answers into the
+tooling/validation plan that lands in the strawman (step 5). Do **not** install anything here;
+detection only. The per-stack gate/loop split and the capability matrix live in
+[blessed-stacks.md](blessed-stacks.md).
+
 Keep batching: ask a small batch, record the answers (step 3), then ask the next batch the answers
 unlocked. Stop when the core is covered and no fired follow-up is still open.
 
@@ -124,6 +138,11 @@ Once the interview and persistence are done, draft a **concise** strawman and pr
   [docs/exec-plans/template.md](../exec-plans/template.md). The first plan is always `001`.
 - **If the project has a UI:** a short design direction in `docs/DESIGN.md` (style, key screens,
   responsive targets, roles/states). Skip this for non-UI projects.
+- A **tooling/validation plan**: the validation **gate** the stack will get (per the
+  [blessed-stacks.md](blessed-stacks.md) matrix — e.g. a Playwright UI smoke in `make test`),
+  any optional **loop** MCP, and **which network installs that implies**. Fold this into the
+  **same** strawman the human approves — one approval gate, not a second one. Surface the gated
+  installs explicitly so approving the strawman is also approving them.
 
 Present it as a proposal, not a fait accompli.
 
@@ -144,14 +163,33 @@ of steps 1–6: cheap iteration before expensive commitment.
 
 Only after explicit approval, provision the stack per [blessed-stacks.md](blessed-stacks.md):
 
-- **Scaffold** the application skeleton for the chosen stack family.
+- **Scaffold** the application skeleton for the chosen stack family. For a web app, follow the
+  copy-pasteable [blessed-stacks.md](blessed-stacks.md) web-app recipe (single-root layout).
 - **Rewrite** the Makefile `fmt` / `lint` / `test` / `build` targets to the real stack tooling.
   (The harness-core `lint-harness` and `ci` targets are **not** rewritten.)
 - **Update** `.github/workflows/ci.yml` for the real stack.
-- **Wire stack enforcement:** stack linters; **UI validation only if there is a UI**; coverage
-  **only if the human asked for it**.
+- **Wire the validation gate `[mechanical]`:** the per-stack gate from the
+  [blessed-stacks.md](blessed-stacks.md) matrix — a Playwright UI smoke (desktop + mobile) for a
+  web app, a local-boot HTTP test for a service, a stdout/exit-code test for a CLI, an
+  ephemeral-DB assertion test where it persists — wired into `make test`/CI. Plus stack linters;
+  coverage **only if the human asked for it**.
+- **Wire the loop tool `[process]` (optional):** if the approved plan included a loop MCP, write
+  its concrete config **into the provisioned project** — a project `.mcp.json` (Claude Code) and
+  the Codex MCP-config equivalent. The **template** ships none of this and stays tool-neutral;
+  the **provisioned project is the user's own repo**, so concrete tool config belongs there.
+  *Template neutral; provisioned project concrete.* Gate any network install per
+  [docs/security/baseline.md](../security/baseline.md) — it was already surfaced at the approval
+  gate; do not install beyond what was approved.
 - **Wire** the [docs/observability/checklist.md](../observability/checklist.md) items relevant to
   the stack (logs, runtime errors, screenshots for a UI).
+- **Reset the presentation for the new project.** The template's own `README.md` carries
+  CI/license/PR **badges** and concept prose pointing at the template repo, plus an MIT
+  `LICENSE` and a `package.json` `version`. A clone inherits all of it, so left as-is the new
+  project would wrongly show the *template's* badges and version. Replace `README.md` with the
+  new project's own (its name, what it does, its own quick-start); **clear or repoint** the
+  template badges at the new repo; **reset `package.json` `version`** (e.g. to `0.1.0` /
+  `0.0.0`) and confirm the license choice for the new project. This is a *provisioning* step —
+  post-approval, not part of the interview.
 - **Remove the tracer bullet:** delete `src/`, `tsconfig.json`, and the tracer-only dependencies.
 
 **Cross-cutting (applies even to a non-Node stack):** the harness linter is delivered over npm, so
