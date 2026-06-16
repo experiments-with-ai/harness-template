@@ -1,5 +1,9 @@
 # Harness Template
 
+[![CI](https://github.com/experiments-with-ai/harness-template/actions/workflows/ci.yml/badge.svg)](https://github.com/experiments-with-ai/harness-template/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/experiments-with-ai/harness-template/pulls)
+
 A clone-and-go starting point for building software with a coding agent **inside a harness** —
 a disciplined environment of docs, conventions, validation loops, and mechanical enforcement
 that turns an unpredictable agent into a reliable one.
