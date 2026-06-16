@@ -41,8 +41,9 @@ build dirs (`apps/web/dist/**`).
 **Do NOT use `**/node_modules/**` or `apps/*/node_modules/**`** — linter 0.1.2 does
 not expand globs; only literal path prefixes match, so a `**` entry silently ignores
 nothing. And `files.ignore` **replaces** the default ignore list (it does not merge),
-so any added entry must keep the existing defaults (`.git/**`, `thoughts/**`,
-`vendor/**`, `bin/**`, `dist/**`, `node_modules/**`).
+so you must keep **every entry already present in `harnesslint.json`** and add the
+per-package ignores alongside them — never retype the defaults from memory and risk
+dropping one.
 
 The **single-root web-app layout below avoids this trap** — one root `node_modules/`,
 already in the defaults. Prefer it unless the product genuinely needs a workspace.

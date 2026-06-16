@@ -166,9 +166,10 @@ flag vendored `README.md` / unpaired `AGENTS.md`. Fix `harnesslint.json` `files.
 `packages/api/node_modules/**` — plus the per-package build dirs (`apps/web/dist/**`). **Do NOT
 use `**/node_modules/**` or `apps/*/node_modules/**`** — linter 0.1.2 does not expand globs; only
 literal path prefixes match, so a `**` entry silently ignores nothing. Note that `files.ignore`
-**replaces** the default ignore list (it does not merge), so any added entry must preserve the
-existing defaults (`.git/**`, `thoughts/**`, `vendor/**`, `bin/**`, `dist/**`, `node_modules/**`).
-Then re-run `make lint-harness` with no active plan and confirm zero issues. *(The single-root
+**replaces** the default ignore list (it does not merge), so you must **keep every entry already
+present in `harnesslint.json`** and add the per-package ignores alongside them — never retype the
+defaults from memory and risk dropping one. Then re-run `make lint-harness` with no active plan
+and confirm zero issues. *(The single-root
 web-app recipe sidesteps this entirely — there is one `node_modules/` at the root, already
 ignored.)*
 

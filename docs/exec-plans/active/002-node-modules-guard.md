@@ -2,7 +2,7 @@
 
 ## Goal
 
-Stop a freshly-provisioned multi-package web app from reding the harness gate with no
+Stop a freshly-provisioned multi-package web app from turning the harness gate red with no
 guidance. Document the fully-literal `files.ignore` remedy a multi-package workspace needs,
 the `**`-glob-does-not-work caveat (linter 0.1.2), and that `files.ignore` **replaces** (not
 merges) the defaults. This is the **doc workaround** for audit finding #1; the real fix
