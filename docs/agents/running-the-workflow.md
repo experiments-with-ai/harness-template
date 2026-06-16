@@ -29,19 +29,37 @@ in [../review/reports/lifecycle.md](../review/reports/lifecycle.md); the reviewe
 instructions live in [../review/code-review-prompt.md](../review/code-review-prompt.md). This
 section only covers *how to launch it*.
 
-Spawn the reviewer in a clean session — do not reuse the working agent's context:
+The reviewer judges the **branch diff against `main`** (`git diff main...HEAD`), so it works
+the same whether or not the branch's work is committed yet.
+
+Spawn the reviewer in a clean session — do not reuse the working agent's context — and prefer
+a **mechanical read-only enforcement** so the read-only contract is enforced by the tool, not
+just by the prompt:
 
 ```bash
-# Claude Code
-claude -p "follow instructions from docs/review/code-review-prompt.md"
+# Claude Code — restrict tools to read-only + the single report write.
+# A read-only permission mode / tool allowlist enforces the contract mechanically.
+claude -p "follow instructions from docs/review/code-review-prompt.md" \
+  --allowedTools "Read,Grep,Glob,Bash(git diff:*),Bash(git log:*),Bash(git rev-parse:*),Bash(git status:*),Bash(git branch:*),Write(docs/review/reports/active/*)"
 
-# Codex
-codex exec "follow instructions from docs/review/code-review-prompt.md"
+# Codex — confine writes to the repo; the sandbox blocks network, installs, and
+# out-of-repo writes mechanically while still allowing the single report write.
+codex exec --sandbox workspace-write "follow instructions from docs/review/code-review-prompt.md"
 
 # Manual / any other tool
 # Open a fresh session and paste the contents of
 # docs/review/code-review-prompt.md as the prompt.
 ```
+
+The prose read-only contract below still applies as the baseline; the flags above are the
+**recommended** way to enforce it. Note the one wrinkle: the reviewer's *only* allowed write
+is its own report (see below), so a strict all-write-blocking mode forbids it. Codex
+`--sandbox read-only` blocks that write — use `workspace-write` (writes confined to the repo,
+network/installs still blocked) so the reviewer can write its report, or, if you want strict
+read-only, run `--sandbox read-only` and have the reviewer print only the verdict for the
+working agent to persist. Tool flags and permission-mode names drift between releases —
+re-verify the exact `--allowedTools` / `--sandbox` forms against your installed CLI before
+relying on them.
 
 ### Reviewer permissions (hard boundary)
 
