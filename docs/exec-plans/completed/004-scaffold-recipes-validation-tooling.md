@@ -42,28 +42,28 @@ Docs/config only — no product code, no change to the shipped tracer bullet or 
 
 ## Acceptance Criteria
 
-- [ ] `blessed-stacks.md` carries the gate-vs-loop split, the per-stack capability matrix, and
+- [x] `blessed-stacks.md` carries the gate-vs-loop split, the per-stack capability matrix, and
       a copy-pasteable web-app recipe with a dated "verified-against" note.
-- [ ] `cold-start.md` surfaces the tooling/validation plan at the **existing** approval gate
+- [x] `cold-start.md` surfaces the tooling/validation plan at the **existing** approval gate
       with installs gated and the choice recorded in the exec-plan Decisions; states the
       template-neutral vs provisioned-project-concrete distinction; and carries the
       presentation-reset step (README/badges/version/license).
-- [ ] `capability-layering.md` Rung 3 carries the known-stack carve-out.
-- [ ] `metrics.md` tags gate tooling `[mechanical]` and MCP/loop tooling `[process]`.
-- [ ] `observability/checklist.md` and `AGENTS.md` step 4 point at the concrete mechanism.
-- [ ] Kept boring and minimal — a Playwright smoke + screenshots for UI; a seed + one
+- [x] `capability-layering.md` Rung 3 carries the known-stack carve-out.
+- [x] `metrics.md` tags gate tooling `[mechanical]` and MCP/loop tooling `[process]`.
+- [x] `observability/checklist.md` and `AGENTS.md` step 4 point at the concrete mechanism.
+- [x] Kept boring and minimal — a Playwright smoke + screenshots for UI; a seed + one
       assertion test against a throwaway DB for persistence. No observability-platform balloon.
-- [ ] `make ci` green; `make lint-harness` clean (no broken inline paths/links introduced).
+- [x] `make ci` green; `make lint-harness` clean (no broken inline paths/links introduced).
 
 ## Steps
 
-- [ ] Branch `feat/scaffold-recipes-validation-tooling` off `main`; create this plan.
-- [ ] `blessed-stacks.md`: gate-vs-loop split + capability matrix + web-app recipe.
-- [ ] `cold-start.md`: detect-and-suggest + neutrality distinction + presentation reset.
-- [ ] `capability-layering.md`: Rung 3 known-stack carve-out.
-- [ ] `metrics.md`: gate `[mechanical]` / loop `[process]` tags.
-- [ ] `observability/checklist.md` + `AGENTS.md` step 4: point at concrete mechanism.
-- [ ] Inner loop (`make fmt`/`lint`/`test`/`build`); review; close plan; harness gate; PR; CI.
+- [x] Branch `feat/scaffold-recipes-validation-tooling` off `main`; create this plan.
+- [x] `blessed-stacks.md`: gate-vs-loop split + capability matrix + web-app recipe.
+- [x] `cold-start.md`: detect-and-suggest + neutrality distinction + presentation reset.
+- [x] `capability-layering.md`: Rung 3 known-stack carve-out.
+- [x] `metrics.md`: gate `[mechanical]` / loop `[process]` tags.
+- [x] `observability/checklist.md` + `AGENTS.md` step 4: point at concrete mechanism.
+- [x] Inner loop (`make fmt`/`lint`/`test`/`build`); review; close plan; harness gate; PR; CI.
 
 ## Open Questions
 
