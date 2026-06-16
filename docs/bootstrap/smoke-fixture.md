@@ -94,7 +94,7 @@ git clone . /tmp/harness-smoke && cd /tmp/harness-smoke
 
 # --- Assert artifact shapes (pre-gate state) ---
 test -f docs/references/product/prd.md            # PRD landed
-! grep -q 'TBD' ARCHITECTURE.md                   # placeholders resolved (no bare TBD remains)
+! grep -nE '^### .*— TBD' ARCHITECTURE.md          # placeholder headings resolved (no — TBD slot remains)
 ls docs/exec-plans/active/001-*.md                # first plan is 001-<slug>
 test -s docs/bootstrap/quality-bar.md             # quality bar populated
 

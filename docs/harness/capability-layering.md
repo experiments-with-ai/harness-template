@@ -8,8 +8,8 @@ next agent. Start at the bottom and stay there as long as it holds.
 The principle, in order of preference:
 
 1. **Durable repo config first.** Prose and config checked into the repo.
-2. **MCP only for a real external loop.** A UI, live logs, an external API.
-3. **Skills for proven, repeated workflows.** Not for one-off tasks.
+2. **Skills for proven, repeated workflows.** Not for one-off tasks.
+3. **MCP only for a real external loop.** A UI, live logs, an external API.
 4. **Automations last.** Only over a workflow already known to be reliable.
 
 See [principles.md](./principles.md) for why "the repository is the system of

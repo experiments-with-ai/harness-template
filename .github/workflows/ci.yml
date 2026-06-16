@@ -5,23 +5,27 @@ name: CI
 # the pinned `@andrew-semyonov/harness-linter` devDependency, and the `npx harnesslint`
 # step that `make ci` runs (see docs/bootstrap/blessed-stacks.md, F5).
 
+# Run on every PR, but only on pushes to `main` — a feature-branch push while its
+# exec-plan is still in `active/` would otherwise red `lint-harness` on
+# `exec-plan-active-present`. The plan is closed before the PR, so the PR run is clean.
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: 11.2.2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 22
+          node-version: "22"
           cache: pnpm
 
       # Install (with the committed lockfile) BEFORE any target that calls `npx harnesslint`,

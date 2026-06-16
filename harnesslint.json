@@ -6,7 +6,6 @@
       "vendor/**",
       "bin/**",
       "dist/**",
-      ".archive/**",
       "node_modules/**"
     ]
   },
