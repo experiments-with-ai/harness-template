@@ -32,6 +32,12 @@ approval gate.
 - Do **not** merge PRs or push directly to `main`/`dev`. Work on a feature branch and open a PR.
 - Never commit secrets. See [docs/security/baseline.md](docs/security/baseline.md).
 
+## Maintaining this template
+
+Working on the template itself (not a project built with it)? See
+[docs/maintaining-the-template.md](docs/maintaining-the-template.md) — it does **not** apply to
+cloned projects, which keep their plans/reports and follow the normal pipeline below.
+
 ## Workflow
 
 These rules are MUST, not suggestions. If a step cannot be completed, STOP and ask the user

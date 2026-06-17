@@ -37,3 +37,27 @@ jobs:
       # where the active exec-plan is already closed, so `exec-plan-active-present` does not fire.
       - name: Run full gate
         run: make ci
+
+  # Template-maintenance ONLY. The distribution artifact must ship with empty lifecycle dirs.
+  # Repo-gated so it NEVER runs in a cloned product repo (which is supposed to accumulate
+  # completed plans/reports). The github.repository gate is the safety; the bootstrap strip
+  # (docs/bootstrap/cold-start.md step 8) is optional hygiene, not a dependency.
+  clean-state:
+    if: github.repository == 'experiments-with-ai/harness-template'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Lifecycle dirs must be .gitkeep-only
+        run: |
+          stray="$(find docs/exec-plans/active docs/exec-plans/completed \
+                        docs/review/reports/active docs/review/reports/closed \
+                        -type f ! -name .gitkeep)"
+          if [ -n "$stray" ]; then
+            echo "::error::Distribution state not clean — these must not be on main:"
+            echo "$stray"
+            echo "Run 'make clean-lifecycle' before merging (template maintenance only)."
+            exit 1
+          fi
+      # A second step — a tripwire asserting cold-start.md does not describe an active exec-plan as
+      # existing at genesis — is added in the prose-edit PR that cleans cold-start.md. It is not
+      # here because it can only pass once those edits land (it shares this job's pass/fail).
