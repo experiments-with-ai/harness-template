@@ -47,14 +47,15 @@ resolved (no bare `TBD` remains):
 - **Enforcement & tooling** — lists the stack linters / type checkers / validators actually
   provisioned for this stack, on top of the always-present harness linter and validation loop.
 
-### 3. A first execution plan at `docs/exec-plans/active/001-<slug>.md`
+### 3. A structured "first build step" in the strawman — and NO committed plan file
 
-- Exactly one plan file under `docs/exec-plans/active/`, named `001-<slug>.md` (the
-  cold-start flow's first plan is always `001`).
-- Follows [the exec-plan template](../exec-plans/template.md): has Goal, In/Out of Scope,
-  Acceptance Criteria, Steps, Open Questions, and a Decisions section.
-- Describes the **first real build step** for the product — it is the work that begins *after*
-  approval, not the bootstrap itself.
+- The lifecycle dirs are **`.gitkeep`-only** at the approval gate: **no** file exists under
+  `docs/exec-plans/active/`. Genesis writes no exec-plan (`main` never carries an active plan).
+- The strawman **describes the first real build step** as structured prose: goal, in/out of
+  scope, acceptance criteria, and open questions — enough that plan `001` can be authored
+  faithfully on the first post-handoff branch.
+- That `001-<slug>.md` file is created **after** handoff, on the first feature branch — not during
+  genesis.
 
 ### 4. A populated `docs/bootstrap/quality-bar.md`
 
@@ -70,8 +71,8 @@ This is the assertion the whole fixture exists to check:
   is the disposable tracer bullet (`src/index.ts` + `src/index.test.ts`).
 - No habit-tracker source, no provisioned stack scaffolding, no new app/package directories
   exist yet — those are produced *after* approval.
-- The artifacts above (PRD, architecture, plan, quality bar) are **documents**, written before
-  the gate. Product **code** is not.
+- The artifacts above (PRD, architecture, the first build step, quality bar) are **documents**,
+  written before the gate. Product **code** is not.
 
 If any product code appears before the gate, the flow has failed, regardless of how good the
 documents look.
@@ -95,7 +96,10 @@ git clone . /tmp/harness-smoke && cd /tmp/harness-smoke
 # --- Assert artifact shapes (pre-gate state) ---
 test -f docs/references/product/prd.md            # PRD landed
 ! grep -nE '^### .*— TBD' ARCHITECTURE.md          # placeholder headings resolved (no — TBD slot remains)
-ls docs/exec-plans/active/001-*.md                # first plan is 001-<slug>
+# lifecycle dirs are .gitkeep-only at the gate — NO committed plan/report files
+test -z "$(find docs/exec-plans/active docs/exec-plans/completed \
+                docs/review/reports/active docs/review/reports/closed \
+                -type f ! -name .gitkeep)"        # all four lifecycle dirs: .gitkeep only
 test -s docs/bootstrap/quality-bar.md             # quality bar populated
 
 # --- Assert the KEY INVARIANT: tracer bullet is still the ONLY code ---
@@ -108,8 +112,18 @@ cd - && rm -rf /tmp/harness-smoke
 
 You do not need to push past the approval gate to pass the smoke test — confirming the gate
 **halts** the flow with all documents in place and no product code is the success condition.
-Optionally, a second run may approve to confirm provisioning starts, but that output is also
-disposable.
+Optionally, a second run may **approve → provision** to confirm the recipe yields a working
+skeleton. If you take that path, assert **green-from-provision** *before* any product code:
+
+```sh
+# After provisioning the stack and BEFORE writing product code:
+make fmt-check lint test build    # full stack gate must be green from the bare skeleton
+```
+
+This is the mechanical check behind the web-app recipe's green-from-provision acceptance criterion
+(see [blessed-stacks.md](blessed-stacks.md)): `tsc -b` typechecks `src/`, vitest passes with
+`--passWithNoTests` (no product tests yet), and the Playwright smoke asserts the scaffold's default
+render. That output is also disposable — never commit it.
 
 ## Pass / fail checklist
 
@@ -119,7 +133,9 @@ The run **passes** only if all of the following hold at the approval gate:
 - [ ] `docs/references/product/prd.md` exists and is a usable, scoped brief.
 - [ ] `ARCHITECTURE.md` has no remaining `TBD`: application = web app, backend/data decided
       or explicitly **none**, enforcement/tooling listed.
-- [ ] Exactly one plan exists at `docs/exec-plans/active/001-<slug>.md`, following the template.
+- [ ] The lifecycle dirs are `.gitkeep`-only at the gate (no committed `active/001` file); the
+      strawman describes the first build step as structured prose (goal / scope / acceptance /
+      open questions).
 - [ ] `docs/bootstrap/quality-bar.md` is populated (unknowns marked honestly, not fabricated).
 - [ ] **No product code exists** — `src/` still contains only the tracer bullet; no stack
       scaffolding or app/package dirs.

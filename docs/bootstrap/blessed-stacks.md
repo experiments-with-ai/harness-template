@@ -109,9 +109,9 @@ something with a UI.
 
 ```sh
 make fmt     # biome format --write
-make lint    # biome check + tsc --noEmit
-make test    # vitest run
-make build   # vite build (tsc for typecheck)
+make lint    # biome check + tsc -b   (NOT tsc --noEmit — see "Config traps" below)
+make test    # vitest run --passWithNoTests && playwright test
+make build   # tsc -b && vite build
 ```
 
 **Enforcement wired:**
@@ -135,11 +135,14 @@ make build   # vite build (tsc for typecheck)
 
 ### Web-app scaffold recipe (copy-pasteable)
 
-> **Verified against Vite 6 / React 19, Tailwind 4, Playwright 1.5x as of 2026-06-16.**
+> **Verified end-to-end on 2026-06-16** against Vite 6 / React 19, Tailwind 4, Playwright 1.5x —
+> the habit-smoke dogfood provisioned this exact recipe and the skeleton passed the stack gate
+> (`fmt-check` / `lint` / `test` / `build`) green **before any product code**, Playwright gate
+> included in CI.
 > These tools move fast. Treat the recipe as the shape; re-check the create command and the
 > two or three pinned versions against the current releases before relying on it, and update
 > this dated note when you do. (Decision: a dated recipe over hard-pinned versions that rot
-> silently — see the active exec-plan's Decisions.)
+> silently — record the choice and its rationale in [ARCHITECTURE.md](../../ARCHITECTURE.md).)
 
 **1. Scaffold into the repo root (single-root layout — avoids the multi-package
 `node_modules` trap):**
@@ -164,6 +167,11 @@ pnpm dlx shadcn@latest init                     # generates components.json + th
 Add the Tailwind plugin to `vite.config.ts` and the `@import "tailwindcss";` line to the root
 stylesheet per the current Tailwind-v4 + Vite guide. React Router: `pnpm add react-router-dom`.
 
+> **TS-6 path-alias trap (2c).** `shadcn init` wires the `@/*` import alias into `tsconfig`. On
+> the pinned TypeScript 6, set the alias with **`paths` only — no `baseUrl`** (`baseUrl` is
+> deprecated and throws `TS5101`; since TS 5.4 `paths` resolve relative to the `tsconfig` without
+> it). If `shadcn init` writes a `baseUrl`, delete it and keep `paths` alone.
+
 **3. The Playwright UI-validation gate (the `[mechanical]` move):**
 
 ```sh
@@ -173,9 +181,12 @@ pnpm exec playwright install --with-deps chromium
 
 Add **one** smoke spec under `e2e/` that boots the app, asserts a real rendered element, and
 screenshots **desktop and mobile** viewports — e.g. `e2e/smoke.spec.ts` with two
-`test.use({ viewport })` blocks (a desktop `1280×800` and a mobile `390×844`). Keep it
-minimal: one happy-path flow + screenshots is the whole gate. Wire it so `make test` runs it
-(either a combined `vitest run && playwright test`, or a `test:e2e` script invoked by the
+`test.use({ viewport })` blocks (a desktop `1280×800` and a mobile `390×844`). **At genesis this
+smoke asserts against the *scaffold's default render*** (e.g. the Vite starter heading), not
+product UI that does not exist yet — so `make test` is green from provision; rewrite it to assert
+the real product flow once that exists. Keep it minimal: one happy-path flow + screenshots is the
+whole gate. Wire it so `make test` runs it (either a combined
+`vitest run --passWithNoTests && playwright test`, or a `test:e2e` script invoked by the
 `make test` target).
 
 **4. The four `make`-target rewrites:**
@@ -183,11 +194,29 @@ minimal: one happy-path flow + screenshots is the whole gate. Wire it so `make t
 | Target | New command |
 |---|---|
 | `make fmt` | `biome format --write .` |
-| `make lint` | `biome check . && tsc --noEmit` |
-| `make test` | `vitest run && playwright test` |
+| `make lint` | `biome check . && tsc -b` |
+| `make test` | `vitest run --passWithNoTests && playwright test` |
 | `make build` | `tsc -b && vite build` |
 
 (`make lint-harness` and `make ci` are harness-core — **not** rewritten.)
+
+**Config traps (why these commands, not the obvious ones — verified against the 2026-06-16 run):**
+
+- **`make lint` uses `tsc -b`, not `tsc --noEmit` (2a — most important).** Vite's scaffold ships a
+  references-only root `tsconfig.json` (`"files": []` + `references` to `tsconfig.app.json` /
+  `tsconfig.node.json`). `tsc --noEmit` against that root **typechecks nothing** — type errors in
+  `src/` sail through `make lint` and surface only at `make build`. `tsc -b` builds the referenced
+  projects (whose `tsconfig.app.json` sets `noEmit`), so it actually typechecks `src/`. Equivalent:
+  `tsc -p tsconfig.app.json --noEmit`. *(Vite-specific — the api-service / cli recipes keep
+  `tsc --noEmit`, which typechecks correctly against their non-references root configs.)*
+- **`make test` passes `--passWithNoTests` to vitest (2b).** At genesis the tracer test is deleted
+  and no product unit tests exist yet; bare `vitest run` **exits 1 on zero test files**, reddening
+  green-from-provision. `--passWithNoTests` fixes it. (`playwright test` needs no such flag — the
+  recipe always ships exactly one `e2e/` smoke spec.)
+- **Biome ignore for the scaffolded favicon (2d).** The Vite scaffold's `public/favicon.svg` trips
+  biome `lint/a11y/noSvgWithoutTitle` out of the box. Scope the ignore to **asset dirs** —
+  `!public/**/*.svg` (and `!**/assets/**/*.svg` if you keep SVG assets there) — **not** a blanket
+  `!**/*.svg`, which would also silence the a11y check on real inline component SVGs in `src/`.
 
 **5. The CI diff** (`.github/workflows/ci.yml`): keep the `npx harnesslint .` step verbatim;
 add a `pnpm exec playwright install --with-deps chromium` step before the test run so the
@@ -209,6 +238,40 @@ Playwright gate has a browser in CI; the existing `make ci` chaining is unchange
 - [ ] Wire observability: runtime-error surfacing + screenshot capture.
 - [ ] Remove the tracer source (`src/index.ts` + `src/index.test.ts`); keep the Node sliver +
       pinned linter devDependency.
+
+**Recipe acceptance criterion (green-from-provision).** Before any product code is written, the
+freshly-provisioned skeleton **must** pass the full stack gate — `make fmt-check lint test build`,
+Playwright smoke (against the scaffold's default render) included — green. The green-genesis model
+(`main` carries no active plan at bootstrap, per [cold-start.md](cold-start.md)) depends on this: a
+red skeleton means the recipe drifted, so fix the recipe, never the gate. The smoke fixture
+mechanically asserts this on its optional approve→provision second run
+(see [smoke-fixture.md](smoke-fixture.md)).
+
+### Deterministic provisioning script — a deferred trade-off (status: prose, scriptless)
+
+Four config-drift defects surfaced in a single dogfood run (the `tsc -b`, `--passWithNoTests`,
+`baseUrl`, and favicon traps above). That is evidence that a **prose** recipe against fast-moving
+tools will keep drifting. A **middle option** between this dated prose recipe and a fully-maintained
+reference scaffold is worth naming — though it is **not built yet**: a checked-in
+**`scripts/provision-web.sh`** that runs the exact create / install / config commands and writes the
+exact config files deterministically, kept honest by the smoke fixture *running* it, so recipe drift
+becomes a mechanical test failure instead of a human-noticed one.
+
+> **DECISION (2026-06-16): stay prose / scriptless for now.** The agent resolved the drift itself on
+> the smoke run, so the prose recipe stays the canonical, adaptive path. The build-or-not call goes
+> to a **team discussion**, not decided here. **If a script is ever built it must be pinned to one
+> known-green toolchain snapshot** — *not* "fetch the freshest stack," since freshness is exactly
+> what caused the drift above. The script's value would be determinism against a snapshot, with the
+> prose recipe remaining the agent-reasoned path that adapts when tools move.
+
+| Approach | Pros | Cons |
+|---|---|---|
+| **Prose recipe (status quo)** | maximally legible to a human; nothing executable to rot or fail hard; tool-neutral; easy to adapt per project | copy-paste drift (the four findings above); the "verified against" note rots silently; the agent executes by hand and can deviate |
+| **Provisioning script** | reproducible, single source of truth; the smoke fixture can *run* it, turning drift into a mechanical failure; removes per-run improvisation | rots like any script when tools change, but fails *hard* (a broken provision script blocks bootstrap); couples the neutral template to a concrete toolchain (the reason a dated recipe was chosen over a maintained scaffold); adds a maintenance surface and a place for bugs; less legible for someone asking *why* |
+
+**Framing if/when it is built:** keep the prose recipe as the canonical *explanation* and add the
+script as a *convenience + drift-catcher* the smoke fixture runs — decided only **after** the recipe
+has stabilized against one known-green snapshot, not before.
 
 ---
 
@@ -301,8 +364,9 @@ make build   # tsc / bundle to a runnable entrypoint
 
 If none of the above fit, the agent does **not** force a fit. It proposes a boring,
 legible toolchain for the actual problem, gets the user's sign-off, and records the
-choice **and its rationale** in the exec-plan's Decisions section (see
-`../exec-plans/template.md`). Then it wires the same four `make` targets and CI.
+choice **and its rationale** in [ARCHITECTURE.md](../../ARCHITECTURE.md) (at genesis, where no
+exec-plan exists yet; for a post-genesis stack change, in the active plan's Decisions section —
+see `../exec-plans/template.md`). Then it wires the same four `make` targets and CI.
 
 **Prefer boring, legible technology** — widely understood tools, stable releases,
 and obvious mechanics beat novel or clever ones. The harness rewards anything an
@@ -311,7 +375,8 @@ agent can format, lint, test, and build with one command each.
 **Provisioning checklist:**
 
 - [ ] Propose a boring, legible toolchain; get user sign-off.
-- [ ] Record the stack choice + rationale in the active exec-plan's Decisions.
+- [ ] Record the stack choice + rationale in [ARCHITECTURE.md](../../ARCHITECTURE.md) (genesis
+      writes no exec-plan; for a post-genesis stack change, record it in the active plan's Decisions).
 - [ ] Scaffold the project.
 - [ ] Define all four `make` targets (`fmt`, `lint`, `test`, `build`) for the
       chosen toolchain.

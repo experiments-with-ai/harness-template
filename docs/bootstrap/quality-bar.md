@@ -69,9 +69,11 @@ high-risk behavior**, do one of two things — never guess:
 2. **Stop for an explicit human decision** before any implementation that touches it.
 
 In both cases, record the unknown **here** (in **High-risk unknowns** and/or **Deferred /
-unknown**) *and* in the active exec-plan's **Open Questions** section
-(`docs/exec-plans/active/NNN-<slug>.md`; see [../exec-plans/template.md](../exec-plans/template.md)).
-High-risk behavior is the one place where "I'll figure it out while coding" is forbidden.
+unknown**). For post-genesis work, also mirror it into the active exec-plan's **Open Questions**
+section (`docs/exec-plans/active/NNN-<slug>.md`; see [../exec-plans/template.md](../exec-plans/template.md)).
+At genesis there is no exec-plan yet — this doc is the record, and any still-open unknown is carried
+into plan `001`'s Open Questions when it is created post-handoff. High-risk behavior is the one
+place where "I'll figure it out while coding" is forbidden.
 
 ## Fallback when criteria are absent
 
@@ -117,8 +119,9 @@ concrete; keep honest gaps in **Deferred / unknown** rather than inventing conte
 ## High-risk unknowns
 
 (Safety / compliance / privacy / authorization / payments / other high-risk.)
-For each: scoped OUT of v1, or STOP for explicit human decision. Mirror in the active
-exec-plan's Open Questions.
+For each: scoped OUT of v1, or STOP for explicit human decision. For post-genesis work, mirror in
+the active exec-plan's Open Questions (at genesis this doc is the record; carry forward into plan
+`001`).
 
 - <unknown> — <scoped out of v1 | needs human decision before implementation>
 

@@ -54,9 +54,11 @@ These rules are MUST, not suggestions. If a step cannot be completed, STOP and a
 
 1. **Prep.** Decide plan mode; if execution, create `docs/exec-plans/active/NNN-<slug>.md`.
    Branch off `main`. Never edit on `main`/`dev`. **One exception:** the one-time cold-start
-   bootstrap is the project's genesis and runs on `main` (it writes the PRD/ARCHITECTURE/plan
-   `001` and provisions the stack with no PR — there is nothing to PR against yet). Normal
-   branch+PR discipline begins with the **first task after handoff** (implementing plan `001`).
+   bootstrap is the project's genesis and runs on `main` (it writes the PRD/ARCHITECTURE and
+   provisions the stack with no PR — there is nothing to PR against yet). Genesis writes **no
+   exec-plan**: `main` never carries work-in-progress. Plan `001` is created on the **first
+   post-handoff branch**, exactly like every later plan. Normal branch+PR discipline begins with
+   that first task after handoff (creating and implementing plan `001`).
    See [docs/bootstrap/cold-start.md](docs/bootstrap/cold-start.md).
 2. **Implement.** Do the work; commit in logical chunks. Prefer a validation loop over
    one-shot generation.

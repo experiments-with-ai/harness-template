@@ -58,6 +58,21 @@ jobs:
             echo "Run 'make clean-lifecycle' before merging (template maintenance only)."
             exit 1
           fi
-      # A second step — a tripwire asserting cold-start.md does not describe an active exec-plan as
-      # existing at genesis — is added in the prose-edit PR that cleans cold-start.md. It is not
-      # here because it can only pass once those edits land (it shares this job's pass/fail).
+      # §1.2 tripwire. The harness linter checks links / pairing / exec-plan-lifecycle, not prose
+      # semantics, and these are inline-prose (not link) references, so brokenLinks can't catch a
+      # reintroduced contradiction. This coarse grep can: it fails if cold-start.md describes an
+      # active exec-plan as EXISTING at genesis (the model §1.2 removed). Verified to fire on the
+      # pre-edit wording and pass the cleaned one (the wrapped step-9 "no active exec-plan" is
+      # allow-listed; newline-normalization makes the match whitespace-robust).
+      - name: cold-start.md asserts no active exec-plan at genesis (plan §1.2)
+        run: |
+          # Normalize newlines to spaces so a markdown hard-wrap can't hide a split phrase; scan the
+          # period-bounded window around each "active exec-plan" and allow the post-genesis /
+          # "no exec-plan" phrasings. Coarse tripwire, not a parser — it catches a reintroduced
+          # positive assertion that genesis carries an active plan.
+          if tr '\n' ' ' < docs/bootstrap/cold-start.md \
+             | grep -oE "[^.]*active exec-plan[^.]*" \
+             | grep -viE "post-genesis|post-handoff|no (active )?exec-plan"; then
+            echo "::error::cold-start.md describes an active exec-plan at genesis (see plan §1.2)"
+            exit 1
+          fi
