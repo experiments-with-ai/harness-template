@@ -1,4 +1,4 @@
-.PHONY: fmt fmt-check lint test build ci lint-harness
+.PHONY: fmt fmt-check lint test build ci lint-harness clean-lifecycle
 
 # Stack layer — wired to the disposable tracer bullet. The cold-start flow
 # (docs/bootstrap/cold-start.md) rewrites these four targets when it provisions a stack.
@@ -33,3 +33,25 @@ lint-harness:
 # Full gate. Run with the active exec-plan already closed (CI runs against the closed PR).
 # Uses fmt-check (not the writing fmt) so format drift fails instead of being silently fixed.
 ci: fmt-check lint test build lint-harness
+
+# Template-maintenance ONLY. Empties the four lifecycle dirs back to .gitkeep so the distribution
+# artifact ships clean (the clean-main / clean-state policy). GUARDED: refuses to run unless origin
+# is the template repo, because in a real product repo completed plans/reports are REQUIRED
+# history. FORCE=1 overrides (e.g. a maintenance fork). The origin guard is the safety; bootstrap
+# may strip this target as hygiene (see docs/bootstrap/cold-start.md step 8).
+clean-lifecycle:
+	@origin="$$(git remote get-url origin 2>/dev/null || true)"; \
+	case "$$origin" in \
+	  *experiments-with-ai/harness-template*) : ;; \
+	  *) if [ "$$FORCE" != "1" ]; then \
+	       echo "refusing: clean-lifecycle is template-maintenance only (origin=$$origin)."; \
+	       echo "In a product repo these dirs hold REQUIRED history. Use FORCE=1 to override."; \
+	       exit 1; \
+	     fi ;; \
+	esac; \
+	for d in docs/exec-plans/active docs/exec-plans/completed \
+	         docs/review/reports/active docs/review/reports/closed; do \
+	  find "$$d" -type f ! -name .gitkeep -delete; \
+	  touch "$$d/.gitkeep"; \
+	done; \
+	echo "lifecycle dirs reset to .gitkeep-only."

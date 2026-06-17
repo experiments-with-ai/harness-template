@@ -191,6 +191,12 @@ Only after explicit approval, provision the stack per [blessed-stacks.md](blesse
   `0.0.0`) and confirm the license choice for the new project. This is a *provisioning* step —
   post-approval, not part of the interview.
 - **Remove the tracer bullet:** delete `src/`, `tsconfig.json`, and the tracer-only dependencies.
+- **(Optional) Strip template-maintenance tooling — atomically.** For tidiness, remove the
+  `clean-state` job from `.github/workflows/ci.yml`, the `clean-lifecycle` target from the
+  `Makefile`, `docs/maintaining-the-template.md`, **and** its pointer line in `AGENTS.md` — all
+  together. They keep the *template's* distribution state clean and do not apply to a product repo
+  (which keeps its completed plans/reports as durable history). Each item already self-gates on
+  `git remote origin`, so leaving them is harmless; just never strip one without the others.
 
 **Cross-cutting (applies even to a non-Node stack):** the harness linter is delivered over npm, so
 every bootstrapped repo keeps a **minimal Node toolchain**, the **pinned `harness-linter`
