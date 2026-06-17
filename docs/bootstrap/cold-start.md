@@ -7,11 +7,13 @@ numbered steps in order. They are MUST, not suggestions: if a step cannot be com
 ask the human rather than skipping, reordering, or working around it.
 
 **This one-time bootstrap is the project's genesis and runs on `main`** — it writes the
-PRD/ARCHITECTURE/plan `001` and (post-approval) provisions the stack directly on `main`, with no
-feature branch and no PR, because there is nothing to PR against yet. This is the single
-documented exception to the root [AGENTS.md](../../AGENTS.md) "never edit on `main`/`dev`" rule.
-Normal branch+PR discipline begins with the **first task after handoff** (step 10): implementing
-plan `001`.
+PRD/ARCHITECTURE (and `docs/DESIGN.md` for a UI) and (post-approval) provisions the stack
+directly on `main`, with no feature branch and no PR, because there is nothing to PR against yet.
+**Genesis creates no exec-plan** — `main` never carries an active plan (work-in-progress never
+belongs on `main`). This is the single documented exception to the root
+[AGENTS.md](../../AGENTS.md) "never edit on `main`/`dev`" rule. Normal branch+PR discipline begins
+with the **first task after handoff** (step 10): creating plan `001` on the first feature branch
+and implementing it.
 
 ## The procedure
 
@@ -93,7 +95,7 @@ artifacts they belong to. The repository is the system of record; context is vol
 | Captured | Goes to |
 | --- | --- |
 | Product brief (what/why, users, scope, non-goals) | `docs/references/product/prd.md` |
-| Stack & architecture decisions **plus the reasoning** | [ARCHITECTURE.md](../../ARCHITECTURE.md) and the active exec-plan's **Decisions** |
+| Stack & architecture decisions **plus the reasoning** | [ARCHITECTURE.md](../../ARCHITECTURE.md) (genesis writes no exec-plan, so record the reasoning here) |
 | Design direction (only if there's a UI) | a new `docs/DESIGN.md` you author |
 | Success criteria | [quality-bar.md](quality-bar.md), filled in place |
 
@@ -101,9 +103,10 @@ The template ships **no** `docs/DESIGN.md` and no generator — author it fresh 
 has a UI, with these sections: visual direction / style, key screens, responsive targets, and any
 roles or states the UI must express. (For non-UI projects, skip it entirely.)
 
-Record *reasoning*, not just choices — a decision without its "why" rots. The exec-plan template's
-`### D-N` blocks (see [docs/exec-plans/template.md](../exec-plans/template.md)) exist for exactly
-this.
+Record *reasoning*, not just choices — a decision without its "why" rots. At genesis that home is
+[ARCHITECTURE.md](../../ARCHITECTURE.md). The exec-plan template's `### D-N` blocks (see
+[docs/exec-plans/template.md](../exec-plans/template.md)) are where **plan `001`'s** decisions go
+once it is authored on the first post-handoff branch — not during genesis.
 
 ### 4. Quality-bar elicitation, with an honesty escape
 
@@ -115,8 +118,9 @@ This is the step most likely to produce garbage if rushed. When you ask the qual
 
 If the human cannot give a **concrete, measurable** criterion, **do not invent one.** Instead:
 
-- Record it as **unknown / deferred** in [quality-bar.md](quality-bar.md) and in the active
-  exec-plan's **Open Questions**.
+- Record it as **unknown / deferred** in [quality-bar.md](quality-bar.md). (Genesis writes no
+  exec-plan; carry any still-open unknowns into plan `001`'s **Open Questions** when it is created
+  on the first post-handoff branch.)
 - **Do not** create a project-specific eval gate for that criterion. A badly-worded eval is worse
   than none — it gives false confidence and fails on the wrong thing.
 - **Fall back to the harness-level checks** that are always real: build, lint, test, CI, and
@@ -134,8 +138,13 @@ Once the interview and persistence are done, draft a **concise** strawman and pr
 - A short **PRD** (`docs/references/product/prd.md`).
 - An **architecture summary** ([ARCHITECTURE.md](../../ARCHITECTURE.md)): stack family, major
   components, the key decisions and their reasoning.
-- The **first execution plan** at `docs/exec-plans/active/001-<slug>.md`, copied from
-  [docs/exec-plans/template.md](../exec-plans/template.md). The first plan is always `001`.
+- The **intended first build step**, described **in the strawman as structured prose** (not a
+  committed plan file — genesis writes none). Give it the shape plan `001` will take so the
+  approval is faithful when the file is authored later: **goal**, **in/out of scope**,
+  **acceptance criteria**, and any **open questions**. The actual
+  `docs/exec-plans/active/001-<slug>.md` is created on the first post-handoff branch (step 10),
+  copied from [docs/exec-plans/template.md](../exec-plans/template.md), carrying this approved
+  content forward verbatim.
 - **If the project has a UI:** a short design direction in `docs/DESIGN.md` (style, key screens,
   responsive targets, roles/states). Skip this for non-UI projects.
 - A **tooling/validation plan**: the validation **gate** the stack will get (per the
@@ -191,6 +200,9 @@ Only after explicit approval, provision the stack per [blessed-stacks.md](blesse
   `0.0.0`) and confirm the license choice for the new project. This is a *provisioning* step —
   post-approval, not part of the interview.
 - **Remove the tracer bullet:** delete `src/`, `tsconfig.json`, and the tracer-only dependencies.
+- **Create no exec-plan.** Provisioning writes process docs and rewrites the stack, but the
+  `docs/exec-plans/{active,completed}` and `docs/review/reports/{active,closed}` lifecycle dirs
+  stay **`.gitkeep`-only** at genesis. Plan `001` is born on the first post-handoff branch.
 - **(Optional) Strip template-maintenance tooling — atomically.** For tidiness, remove the
   `clean-state` job from `.github/workflows/ci.yml`, the `clean-lifecycle` target from the
   `Makefile`, `docs/maintaining-the-template.md`, **and** its pointer line in `AGENTS.md` — all
@@ -220,21 +232,23 @@ ignored.)*
 ### 9. Emit the bootstrap-end scorecard
 
 Print the honest scorecard per [docs/harness/metrics.md](../harness/metrics.md): the
-**process-artifacts** produced (PRD, ARCHITECTURE, plan 001, quality-bar) and the
-**guardrails-as-proof**, each tagged `[mechanical]` or `[process]`.
+**process-artifacts** produced (PRD, ARCHITECTURE, quality-bar, and `docs/DESIGN.md` for a UI) and
+the **guardrails-as-proof**, each tagged `[mechanical]` or `[process]`.
 
-**Report the linter line honestly.** Stack lint is clean. The harness gate (`make lint-harness`)
-runs at the **first plan close**, not now — and plan `001` is **legitimately active** at this
-moment, so the exec-plan-active rule *would* fire. **Do not** claim "harness-clean" or
-"`lint-harness` green" here; state that the harness gate is pending the first plan close. Claiming
-otherwise is the exact dishonesty the metrics doc forbids.
+**Report the linter line honestly.** Stack lint is clean, and because genesis carries **no active
+exec-plan**, `make lint-harness` is **genuinely green** on `main` — report it as harness-clean,
+because it is true, not aspirational. (Under the previous model an active `001` made the gate
+"pending"; that nuance is gone.) The exec-plan lifecycle gate first does real work at the **first
+post-handoff plan close** (`001`).
 
 ### 10. Hand off
 
 Bootstrap is complete. Hand off to the **normal task pipeline** in the root
-[AGENTS.md](../../AGENTS.md): implement plan `001` through the inner loop (`make fmt` / `lint` /
-`test` / `build`), pre-commit review, **then** close the plan, **then** run `make lint-harness`,
-then push + PR + CI. From here the project is a normal harnessed repo; this flow does not run again.
+[AGENTS.md](../../AGENTS.md): on the first feature branch, **create** plan `001` (copy the template
+into `docs/exec-plans/active/001-<slug>.md`, carrying forward the approved first build step),
+implement it through the inner loop (`make fmt` / `lint` / `test` / `build`), pre-commit review,
+**then** close the plan, **then** run `make lint-harness`, then push + PR + CI. From here the
+project is a normal harnessed repo; this flow does not run again.
 
 ## Worked example (smoke fixture)
 
@@ -291,8 +305,10 @@ A single individual tracking their own habits. (No multi-user / accounts in v1.)
 ```
 
 The stack/architecture answers from later batches go to [ARCHITECTURE.md](../../ARCHITECTURE.md)
-and `docs/exec-plans/active/001-habit-tracker.md`; the success criteria above are also mirrored
-into [quality-bar.md](quality-bar.md). Had the human answered "I don't know" to Q3, the criterion
+(genesis writes no exec-plan; `docs/exec-plans/active/001-habit-tracker.md` is created on the first
+post-handoff branch, carrying the approved first build step forward); the success criteria above
+are also mirrored into [quality-bar.md](quality-bar.md). Had the human answered "I don't know" to
+Q3, the criterion
 would be recorded as **unknown / deferred** in the quality bar and the plan's Open Questions — not
 invented — and the harness-level checks (build/lint/test/CI/plan-traceability) would carry the
 load.

@@ -33,7 +33,7 @@ generation**.
    **adaptive interview** (a required core of ~8–10 questions, then follow-ups that fire on
    your answers), each with a recommended default you can accept or override.
 5. It persists your answers to repo artifacts as it goes, drafts a **strawman** (PRD +
-   architecture + first exec-plan), and you react and revise.
+   architecture + the intended first build step), and you react and revise.
 6. **Explicit approval gate:** no product code until you say go.
 7. It provisions the stack, replaces the tracer bullet, and emits an honest harness scorecard.
 

@@ -24,14 +24,14 @@ In v1 this scorecard is a **documented summary, here**, that the cold-start flow
 
 Counts and statuses drawn straight from repo + git + CI. These show that the workflow was actually followed, not just described:
 
-- **Exec-plans created with Decisions logged** — number of plans in `docs/exec-plans/completed/` (plus the active one) that carry a populated Decisions section.
+- **Exec-plans created with Decisions logged** — number of plans in `docs/exec-plans/completed/` that carry a populated Decisions section. (At the genesis scorecard this is zero — plan `001` is created post-handoff, not during bootstrap.)
 - **Reviewer iterations to APPROVED** — how many review rounds each plan took to reach an APPROVED report under `docs/review/reports/closed/`.
 - **Validation-loop runs / CI green** — count of green `make ci` / CI runs in the history.
-- **Linter status** — with this nuance stated verbatim:
+- **Linter status** — at the genesis scorecard, report it **honestly green**:
 
-  > stack lint clean now; the harness gate runs at the first plan close
+  > stack lint clean; harness gate clean — `main` carries no active exec-plan
 
-  At bootstrap end, the just-created **plan `001` is legitimately active** in `docs/exec-plans/active/`. The harness gate (`make lint-harness`) is therefore expected to flag an active plan and is **not** run yet. So **do NOT report a false `harness-clean` here** — report the stack lint status (clean) and note the gate fires at the first plan close.
+  Because genesis creates **no** exec-plan (`main` never carries work-in-progress), `make lint-harness` passes on the genesis commit. Report **harness-clean** — it is true, not aspirational. The exec-plan lifecycle gate first does real work at the **first post-handoff plan close** (`001`).
 
 - **Share of changes traceable to a reviewed plan** — fraction of post-bootstrap changes that map back to an exec-plan that went through the reviewer gate.
 
