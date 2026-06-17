@@ -10,5 +10,7 @@ To start a new project from this template, follow [cold-start.md](cold-start.md)
 - Fixed fixture used to verify the flow itself: [smoke-fixture.md](smoke-fixture.md).
 
 **Hard rule:** do not write product code or scaffold a real stack until the cold-start flow
-reaches its explicit human **approval gate**. Persist interview answers to repo artifacts as
+reaches its explicit human **approval gate** — no matter how small, creative, or self-contained
+the build seems. "It's just a quick one-off" is not an exemption, and whether the flow is overkill
+is the user's call, not the agent's. Persist interview answers to repo artifacts as
 you go; draft a strawman; get approval; only then provision.
