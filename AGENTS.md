@@ -17,7 +17,10 @@ If this repo is still the empty template — the tracer bullet in `src/` is pres
 product exists yet — **begin with [docs/bootstrap/cold-start.md](docs/bootstrap/cold-start.md)
 before any implementation work.** It runs an adaptive interview, drafts a strawman, waits
 for your explicit approval, then provisions the stack. Do not write product code before the
-approval gate.
+approval gate. There is **no exemption** for a build that feels small, creative, or like a quick
+one-off — the gate applies to the first build however trivial it looks. Whether the full flow is
+overkill is the **user's** call, not yours: if it feels heavy, STOP and ask; never skip, shrink,
+or work around it.
 
 ## Tooling (generic only)
 
@@ -43,8 +46,17 @@ cloned projects, which keep their plans/reports and follow the normal pipeline b
 These rules are MUST, not suggestions. If a step cannot be completed, STOP and ask the user
 — do not silently skip, reorder, or work around it.
 
-- Pick a plan mode before starting: **lightweight** (mental, unwritten) for a small, obvious,
-  single-domain change with no new deps and no architectural/schema/API change; otherwise an
+**If the repo is still the empty template, the cold-start approval gate
+([docs/bootstrap/cold-start.md](docs/bootstrap/cold-start.md)) comes before everything below and
+governs the entire first build.** The plan-mode choice that follows is a *post-handoff* decision;
+before the gate there is no lightweight path and no plan mode to pick. Do not let a small or
+"creative" first task talk you past the gate — whether the ceremony is warranted is the user's
+call, not yours.
+
+- Pick a plan mode before starting *(post-handoff only — the empty-template first build goes
+  through the cold-start gate above, not this choice)*: **lightweight** (mental, unwritten) for a
+  small, obvious, single-domain change with no new deps and no architectural/schema/API change;
+  otherwise an
   **execution plan** — copy [docs/exec-plans/template.md](docs/exec-plans/template.md) to
   `docs/exec-plans/active/NNN-<slug>.md`. When in doubt, go execution.
 - Keep active plans in `docs/exec-plans/active/`; move finished plans to
