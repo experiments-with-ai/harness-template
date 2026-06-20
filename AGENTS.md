@@ -4,6 +4,32 @@ Humans: read [README.md](README.md) and the docs under `docs/harness/` for what 
 is and why. Agents: this file is your **map**, not an encyclopedia — follow the workflow
 below and open the linked docs when you need detail.
 
+## Before anything else — which phase are you in?
+
+This template is a **two-phase state machine**, and the phases do not overlap:
+
+- **Phase 1 — Bootstrap.** Turn the empty template into a real, harnessed project (interview →
+  strawman → explicit approval → provision the stack). This is [cold-start](docs/bootstrap/cold-start.md).
+- **Phase 2 — Normal pipeline.** Build features in the now-real project (the Workflow below).
+
+**Phase 2 does not begin until Phase 1 completes.** The phase is recorded in the root
+`BOOTSTRAP_STATE` file — **read it now** and route accordingly:
+
+- **`unbootstrapped`** → You are in Phase 1. Your **only** valid next action is the cold-start
+  flow: [docs/bootstrap/cold-start.md](docs/bootstrap/cold-start.md). Do **not** write product
+  code, scaffold a stack, or touch the task pipeline below — none of it applies yet. This holds
+  **however small, creative, or one-off** the request feels; whether the flow is overkill is the
+  **user's** call, not yours — if it feels heavy, STOP and ask, never skip or work around it.
+  (The Makefile backs this mechanically: on a clone, `make fmt`/`lint`/`test`/`build` refuse to
+  run until bootstrap flips the bit — so you cannot complete the mandatory validation loop on
+  product code without bootstrapping first.)
+- **`bootstrapped`** (or the file is absent) → Phase 1 is done. Follow the normal Workflow below.
+
+**Exception — developing the template itself.** If `origin` is
+`…/experiments-with-ai/harness-template` you are *maintaining the harness*, not building a project:
+the template permanently ships `unbootstrapped`, so this phase routing does **not** apply to you —
+see [docs/maintaining-the-template.md](docs/maintaining-the-template.md) and the Workflow below.
+
 ## Key docs
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — layered model; bootstrap fills the project-specific parts.
@@ -11,16 +37,17 @@ below and open the linked docs when you need detail.
 - [docs/bootstrap/AGENTS.md](docs/bootstrap/AGENTS.md) — **cold-start entrypoint** for a new project.
 - [docs/agents/running-the-workflow.md](docs/agents/running-the-workflow.md) — exact command forms per tool (Claude Code, Codex, manual).
 
-## Starting a new project
+## Starting a new project (Phase 1)
 
-If this repo is still the empty template — the tracer bullet in `src/` is present and no
-product exists yet — **begin with [docs/bootstrap/cold-start.md](docs/bootstrap/cold-start.md)
+If `BOOTSTRAP_STATE` reads `unbootstrapped` (the tracer bullet in `src/` is still present and no
+product exists yet), **begin with [docs/bootstrap/cold-start.md](docs/bootstrap/cold-start.md)
 before any implementation work.** It runs an adaptive interview, drafts a strawman, waits
-for your explicit approval, then provisions the stack. Do not write product code before the
+for your explicit approval, then provisions the stack and flips `BOOTSTRAP_STATE` to
+`bootstrapped` — the unlock that opens Phase 2. Do not write product code before the
 approval gate. There is **no exemption** for a build that feels small, creative, or like a quick
 one-off — the gate applies to the first build however trivial it looks. Whether the full flow is
 overkill is the **user's** call, not yours: if it feels heavy, STOP and ask; never skip, shrink,
-or work around it.
+or work around it. The Makefile enforces this on clones (see the state-machine note at the top).
 
 ## Tooling (generic only)
 
@@ -46,7 +73,7 @@ cloned projects, which keep their plans/reports and follow the normal pipeline b
 These rules are MUST, not suggestions. If a step cannot be completed, STOP and ask the user
 — do not silently skip, reorder, or work around it.
 
-**If the repo is still the empty template, the cold-start approval gate
+**If `BOOTSTRAP_STATE` reads `unbootstrapped` (Phase 1), the cold-start approval gate
 ([docs/bootstrap/cold-start.md](docs/bootstrap/cold-start.md)) comes before everything below and
 governs the entire first build.** The plan-mode choice that follows is a *post-handoff* decision;
 before the gate there is no lightweight path and no plan mode to pick. Do not let a small or

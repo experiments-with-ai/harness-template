@@ -12,6 +12,13 @@ concrete designs belong in focused docs under `docs/` once they exist.
 
 ## Harness-core structure (stable across projects)
 
+- **Two-phase bootstrap state machine.** Building from the template has two non-overlapping
+  phases — Phase 1 (bootstrap: interview → approval → provision) and Phase 2 (normal task
+  pipeline) — recorded in the root `BOOTSTRAP_STATE` sentinel (`unbootstrapped` → `bootstrapped`,
+  flipped by cold-start at provision time). A `guard-bootstrapped` Makefile prerequisite blocks the
+  stack `make` targets on a clone until the bit flips, so the "bootstrap before product code" rule
+  is enforced mechanically (the Makefile travels with the clone), not by prose. Template
+  maintainers/CI are origin-exempt, mirroring `clean-lifecycle`.
 - **Monorepo-friendly layout.** The template ships as a single root package (the tracer
   bullet). If a provisioned stack is genuinely multi-package, bootstrap introduces an
   `apps/` + `packages/` workspace at that point — not before, and must add a fully-literal

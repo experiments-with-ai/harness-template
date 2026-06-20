@@ -35,9 +35,17 @@ generation**.
 5. It persists your answers to repo artifacts as it goes, drafts a **strawman** (PRD +
    architecture + the intended first build step), and you react and revise.
 6. **Explicit approval gate:** no product code until you say go.
-7. It provisions the stack, replaces the tracer bullet, and emits an honest harness scorecard.
+7. It provisions the stack, replaces the tracer bullet, flips `BOOTSTRAP_STATE` to
+   `bootstrapped`, and emits an honest harness scorecard.
 
 From there, every change goes through the task pipeline in [AGENTS.md](AGENTS.md).
+
+**Two phases, mechanically separated.** Building from this template is a two-phase state machine
+recorded in the root `BOOTSTRAP_STATE` file. While it reads `unbootstrapped`, the only valid move
+is the cold-start flow above (Phase 1); the stack `make` targets are **gated off on a clone** until
+bootstrap flips the bit to `bootstrapped` (Phase 2). This stops an eager agent from skipping the
+interview and approval gate to "just build it" — the separation is enforced by the Makefile, which
+travels with the clone, not by prose alone.
 
 ## What's in the box
 
@@ -68,6 +76,12 @@ make test     # tracer-bullet test
 make build    # tsc build
 ```
 
+> **On a clone, those four targets are gated until you bootstrap.** `BOOTSTRAP_STATE` ships
+> `unbootstrapped`, so on your own repo `make fmt/lint/test/build` print a STOP banner pointing at
+> the cold-start flow — that's the point: bootstrap first. To kick the tracer's tires before
+> bootstrapping anyway, prefix with `FORCE=1` (e.g. `FORCE=1 make test`). The gate lifts on its own
+> once bootstrap flips the bit.
+
 `make lint-harness` runs the repository-policy linter; it is gate-timed (run it once an
 execution plan is closed), and `make ci` chains the whole gate together. See [AGENTS.md](AGENTS.md)
 for the full pipeline.
@@ -79,6 +93,7 @@ harness-template/
 ├── README.md              # this file (human-facing)
 ├── AGENTS.md              # agent map + task pipeline (Claude reads CLAUDE.md → @AGENTS.md)
 ├── ARCHITECTURE.md        # layered model; bootstrap fills the project-specific parts
+├── BOOTSTRAP_STATE        # phase sentinel: unbootstrapped → bootstrap; flipped at provision
 ├── Makefile               # fmt / fmt-check / lint / test / build / ci / lint-harness
 ├── package.json           # single root package; pinned packageManager + linter dep
 ├── biome.json             # tracer formatter + linter config (stack layer)
