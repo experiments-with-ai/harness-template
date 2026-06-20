@@ -76,3 +76,14 @@ jobs:
             echo "::error::cold-start.md describes an active exec-plan at genesis (see plan §1.2)"
             exit 1
           fi
+
+      # The distribution artifact must ship in Phase 1: the bootstrap state machine is pointless
+      # if the template is published already-bootstrapped. Bootstrap flips this to `bootstrapped`
+      # in a CLONE; on the template repo it must stay `unbootstrapped` (plan 007).
+      - name: Template ships BOOTSTRAP_STATE=unbootstrapped (plan 007)
+        run: |
+          state="$(cat BOOTSTRAP_STATE 2>/dev/null || echo MISSING)"
+          if [ "$state" != "unbootstrapped" ]; then
+            echo "::error::BOOTSTRAP_STATE must be 'unbootstrapped' on the template (got '$state')"
+            exit 1
+          fi

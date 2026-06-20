@@ -6,6 +6,12 @@ to be executed by any agent — Claude Code or Codex — by reading it top to bo
 numbered steps in order. They are MUST, not suggestions: if a step cannot be completed, STOP and
 ask the human rather than skipping, reordering, or working around it.
 
+This is **Phase 1** of the template's two-phase state machine (Phase 2 is the normal task
+pipeline). The phase is recorded in the root `BOOTSTRAP_STATE` file: it ships `unbootstrapped`,
+and **provisioning (step 8) flips it to `bootstrapped`** — the single action that lifts the
+Makefile guard and switches root-`AGENTS.md` routing from Phase 1 to Phase 2. Until that flip,
+the stack `make` targets refuse to run on a clone, so product work cannot begin.
+
 **This one-time bootstrap is the project's genesis and runs on `main`** — it writes the
 PRD/ARCHITECTURE (and `docs/DESIGN.md` for a UI) and (post-approval) provisions the stack
 directly on `main`, with no feature branch and no PR, because there is nothing to PR against yet.
@@ -21,17 +27,16 @@ and implementing it.
 
 Before anything else, decide whether this flow even applies.
 
-You are looking at an **un-bootstrapped template** when all of these hold:
+**The authoritative signal is the root `BOOTSTRAP_STATE` file.** Read it:
 
-- The **tracer bullet** is still present — a placeholder `src/` (e.g. `src/index.ts`) and the
-  tracer-only toolchain (`tsconfig.json`, biome, vitest) wired to the stub `make` targets.
-- There is **no committed product PRD** at `docs/references/product/prd.md`.
-- There is **no product code** — only harness docs and the tracer bullet.
-
-If those hold, run this flow. If the repo is **already bootstrapped** (a real PRD exists, the
-tracer bullet is gone, the `make` targets point at a real stack), **skip this flow entirely** and
-go straight to the normal task pipeline in the root [AGENTS.md](../../AGENTS.md). Do not re-run a
-cold start on a live project.
+- **`unbootstrapped`** → run this flow. (Corroborating, all true in this state: the **tracer
+  bullet** is still present — a placeholder `src/` (e.g. `src/index.ts`) and the tracer-only
+  toolchain (`tsconfig.json`, biome, vitest) wired to the stub `make` targets; there is **no
+  committed product PRD** at `docs/references/product/prd.md`; there is **no product code**.)
+- **`bootstrapped`** (or the file is absent) → the repo is **already bootstrapped** (a real PRD
+  exists, the tracer bullet is gone, the `make` targets point at a real stack). **Skip this flow
+  entirely** and go straight to the normal task pipeline in the root
+  [AGENTS.md](../../AGENTS.md). Do not re-run a cold start on a live project.
 
 ### 2. Adaptive interview
 
@@ -200,6 +205,13 @@ Only after explicit approval, provision the stack per [blessed-stacks.md](blesse
   `0.0.0`) and confirm the license choice for the new project. This is a *provisioning* step —
   post-approval, not part of the interview.
 - **Remove the tracer bullet:** delete `src/`, `tsconfig.json`, and the tracer-only dependencies.
+- **Flip the bootstrap bit — the unlock (do this LAST, once the stack is actually in place).**
+  Write `bootstrapped` to the root `BOOTSTRAP_STATE` file (replacing `unbootstrapped`). This single
+  action lifts the Makefile `guard-bootstrapped` gate and switches root-[AGENTS.md](../../AGENTS.md)
+  routing from Phase 1 to Phase 2 — it is what makes `make fmt`/`lint`/`test`/`build` run product
+  code. Keep the file (don't delete it): it is the durable record of which phase the repo is in.
+  The guard recipe stays in the Makefile but is now permanently inert, so when you rewrote the four
+  stack targets above you need not have preserved its prerequisite.
 - **Create no exec-plan.** Provisioning writes process docs and rewrites the stack, but the
   `docs/exec-plans/{active,completed}` and `docs/review/reports/{active,closed}` lifecycle dirs
   stay **`.gitkeep`-only** at genesis. Plan `001` is born on the first post-handoff branch.
