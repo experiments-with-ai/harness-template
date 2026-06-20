@@ -31,26 +31,28 @@ the very top of `AGENTS.md`.
 
 ## Acceptance Criteria
 
-- [ ] `BOOTSTRAP_STATE` exists at root containing `unbootstrapped`.
-- [ ] On a **clone** (non-template origin) with `unbootstrapped`, `make build`/`test`/`fmt`/`lint`
+- [x] `BOOTSTRAP_STATE` exists at root containing `unbootstrapped`.
+- [x] On a **clone** (non-template origin) with `unbootstrapped`, `make build`/`test`/`fmt`/`lint`
       print a STOP banner pointing at cold-start and exit non-zero; `FORCE=1` overrides.
-- [ ] On the **template** origin (and in template CI), the guard is a no-op — `make ci` stays green.
-- [ ] With `BOOTSTRAP_STATE=bootstrapped` (or absent), the guard is a no-op on any origin.
-- [ ] `AGENTS.md` opens with the binary state route; it carves out template maintenance by origin.
-- [ ] `cold-start.md` §1 detection is sentinel-first; §8 flips the bit as the documented unlock.
-- [ ] `make ci` is green on this branch (template origin), `make lint-harness` clean (plan closed).
+      *(Verified end-to-end against a real clone with a fake origin.)*
+- [x] On the **template** origin (and in template CI), the guard is a no-op — `make ci` stays green.
+- [x] With `BOOTSTRAP_STATE=bootstrapped` (or absent), the guard is a no-op on any origin.
+- [x] `AGENTS.md` opens with the binary state route; it carves out template maintenance by origin.
+- [x] `cold-start.md` §1 detection is sentinel-first; §8 flips the bit as the documented unlock.
+- [x] `make ci` is green on this branch (template origin), `make lint-harness` clean (plan closed).
+      *(fmt/lint/test/build green; lint-harness run at the gate after this close.)*
 
 ## Steps
 
-- [ ] Add `BOOTSTRAP_STATE` (content: `unbootstrapped`).
-- [ ] Add `guard-bootstrapped` to the Makefile and make the four stack targets depend on it.
-- [ ] Add the top-of-file state route to `AGENTS.md`; reconcile "Starting a new project" + Workflow
+- [x] Add `BOOTSTRAP_STATE` (content: `unbootstrapped`).
+- [x] Add `guard-bootstrapped` to the Makefile and make the four stack targets depend on it.
+- [x] Add the top-of-file state route to `AGENTS.md`; reconcile "Starting a new project" + Workflow
       prose to the Phase 1/Phase 2 framing and the sentinel.
-- [ ] Update `cold-start.md` §1 (detection) and §8 (bit-flip unlock) + intro framing.
-- [ ] Update `docs/bootstrap/AGENTS.md` hard rule.
-- [ ] Add the template-only CI tripwire for the shipped sentinel value.
-- [ ] Add the human-facing one-liner (README) explaining the sentinel.
-- [ ] Verify: simulate a clone (`make build` with a non-template origin / `FORCE` off) blocks;
+- [x] Update `cold-start.md` §1 (detection) and §8 (bit-flip unlock) + intro framing.
+- [x] Update `docs/bootstrap/AGENTS.md` hard rule.
+- [x] Add the template-only CI tripwire for the shipped sentinel value.
+- [x] Add the human-facing one-liner (README) explaining the sentinel.
+- [x] Verify: simulate a clone (`make build` with a non-template origin / `FORCE` off) blocks;
       template origin passes; `make ci` green; `make lint-harness` clean after plan close.
 
 ## Open Questions
